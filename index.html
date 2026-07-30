@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Semaphore Master - Animasi Mulus & Presisi O, V, Z</title>
+    <title>Semaphore Master - Full Range Counting 0.05s-5s</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons CDN -->
@@ -84,7 +84,7 @@
         <div id="menu-screen" class="space-y-4 sm:space-y-6">
             <div class="text-center space-y-1 sm:space-y-2">
                 <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Pilih Mode Permainan</h2>
-                <p class="text-slate-400 max-w-md mx-auto text-xs sm:text-sm">Presisi posisi A-Z resmi (O, V, Z dikoreksi) dengan animasi berayun mulus.</p>
+                <p class="text-slate-400 max-w-md mx-auto text-xs sm:text-sm">Mode Counting kini mendukung rentang fleksibel dari 0.05s hingga 5.00s.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-2 sm:mt-6">
@@ -140,16 +140,20 @@
                         </div>
                         <h3 class="text-lg sm:text-xl font-extrabold mb-1.5 text-white">Semapur Counting</h3>
                         <p class="text-slate-400 text-xs sm:text-sm mb-4 leading-relaxed">
-                            Menampilkan <b>20 HURUF ACAK</b> berurutan. Kecepatan perpindahan huruf dapat diatur sesuai keinginan.
+                            Menampilkan <b>20 HURUF ACAK</b> berurutan. Kecepatan perpindahan huruf dapat diatur dari <b>0.05s</b> sampai <b>5.00s</b>.
                         </p>
 
-                        <!-- Slider Kecepatan Counting -->
+                        <!-- Slider Kecepatan Counting (0.05s - 5.00s) -->
                         <div class="space-y-2 mb-6 bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
                             <div class="flex justify-between items-center">
                                 <label class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider">Durasi Per Huruf:</label>
                                 <span id="speed-val" class="text-[10px] sm:text-xs font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-lg border border-blue-500/20">0.80 Detik</span>
                             </div>
-                            <input type="range" id="speed-range" min="0.05" max="2.0" step="0.05" value="0.8" class="w-full accent-blue-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                            <input type="range" id="speed-range" min="0.05" max="5.00" step="0.05" value="0.80" class="w-full accent-blue-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                            <div class="flex justify-between text-[9px] text-slate-500 font-bold px-0.5">
+                                <span>0.05s (Super Cepat)</span>
+                                <span>5.00s (Santai)</span>
+                            </div>
                         </div>
                     </div>
 
@@ -332,18 +336,13 @@
             panjang: ["PRAMUKA PEREKAT NKRI", "SATIYAKU KUDHARMAKAN DHARMAKU KUBAKTIKAN", "PRAMUKA GARUDA INDONESIA"]
         };
 
-        /* MODEL ROTASI SISI PERSPECTIVE PENONTON (DAPAT BERPUTAR MULUS DENGAN TRANSITION):
+        /* MODEL ROTASI PERSPEKTIF PENONTON:
            0: Down (180°)           | 45: Down-Left (225°)
            90: Left Horiz (270°)    | 135: Up-Left (315°)
            180: Up (0°)             | 225: Up-Right (45°)
            270: Right Horiz (90°)   | 315: Down-Right (135°)
         */
 
-        /* PEMETAAN EKSPLISIT PRESISI 100% SESUAI RUJUKAN GAMBAR PERAGAAN (TERMASUK KOREKSI KHUSUS O, V, DAN Z):
-           - O: Left Horiz (90) + Up-Left (135)
-           - V: Up (180) + Down-Right (315)
-           - Z: Right Horiz (270) + Down-Right (315)
-        */
         const semaphoreCodeMap = {
             'A': [0, 45],     // Down + Down-Left
             'B': [0, 90],     // Down + Left Horiz
@@ -359,18 +358,18 @@
             'L': [45, 225],   // Down-Left + Up-Right
             'M': [45, 270],   // Down-Left + Right Horiz
             'N': [45, 315],   // Down-Left + Down-Right
-            'O': [90, 135],   // Left Horiz + Up-Left (DIKOREKSI PRESISI 100%)
+            'O': [90, 135],   // Left Horiz + Up-Left
             'P': [90, 180],   // Left Horiz + Up
             'Q': [90, 225],   // Left Horiz + Up-Right
             'R': [90, 270],   // Left Horiz + Right Horiz
             'S': [90, 315],   // Left Horiz + Down-Right
             'T': [135, 180],  // Up-Left + Up
             'U': [135, 225],  // Up-Left + Up-Right
-            'V': [180, 315],  // Up + Down-Right (DIKOREKSI PRESISI 100%)
+            'V': [180, 315],  // Up + Down-Right
             'W': [225, 270],  // Up-Right + Right Horiz
             'X': [225, 315],  // Up-Right + Down-Right
             'Y': [135, 270],  // Up-Left + Right Horiz
-            'Z': [270, 315]   // Right Horiz + Down-Right (DIKOREKSI PRESISI 100%)
+            'Z': [270, 315]   // Right Horiz + Down-Right
         };
 
         // State Variable
@@ -390,7 +389,7 @@
             document.getElementById('fast-speed-badge').innerText = `${fastSpeed.toFixed(2)}s / Huruf`;
         });
 
-        // Slider Counting
+        // Slider Counting (0.05s - 5.00s)
         document.getElementById('speed-range').addEventListener('input', (e) => {
             customSpeed = parseFloat(e.target.value);
             document.getElementById('speed-val').innerText = `${customSpeed.toFixed(2)} Detik`;
@@ -539,7 +538,6 @@
             renderSmoothRotation(char.toUpperCase(), 'arm1-group', 'arm2-group');
         }
 
-        // FUNGSI ANIMASI ROTASI DENGAN EFEK BERAYUN MULUS (SMOOTH TRANSITION)
         function renderSmoothRotation(char, g1Id, g2Id) {
             const angles = semaphoreCodeMap[char] || [0, 0];
             const g1 = document.getElementById(g1Id);
