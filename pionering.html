@@ -1,0 +1,693 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Play, Pause, RotateCcw, CheckCircle2, Trophy, 
+  Timer, Gauge, ShieldCheck, Sparkles, Clock, 
+  Trash2, Flag, Camera, RefreshCw, Award, ArrowRight
+} from 'lucide-react';
+
+export default function App() {
+  // Active Mode Switch: 'run' | 'regular'
+  const [activeTab, setActiveTab] = useState('run');
+
+  // --- REGULAR TIMER STATE ---
+  const [regTime, setRegTime] = useState(0); // detik
+  const [regIsActive, setRegIsActive] = useState(false);
+  const [regMode, setRegMode] = useState('stopwatch'); // 'stopwatch' | 'countdown'
+  const [regInputMinutes, setRegInputMinutes] = useState(5);
+
+  // --- RUN MODE TIMER STATE ---
+  const TOTAL_MAX_TIME = 1800; // 30 Menit (1800 detik)
+  const [runTargetMinutes, setRunTargetMinutes] = useState(2); // Waktu yang di-set pengguna
+  const [runElapsedTime, setRunElapsedTime] = useState(0); // Waktu terpakai
+  const [runIsRunning, setRunIsRunning] = useState(false);
+  const [runIsFinished, setRunIsFinished] = useState(false);
+
+  // --- SCORE / CORRECTION STATE ---
+  const [scores, setScores] = useState({
+    simpul: 25,
+    kekuatan: 25,
+    kerapihan: 25,
+  });
+  const [screenshotMode, setScreenshotMode] = useState(false);
+  const [history, setHistory] = useState([]);
+
+  const regIntervalRef = useRef(null);
+  const runIntervalRef = useRef(null);
+
+  // -------------------------------------------------------------
+  // REGULAR TIMER LOGIC
+  // -------------------------------------------------------------
+  useEffect(() => {
+    if (regIsActive) {
+      regIntervalRef.current = setInterval(() => {
+        setRegTime((prev) => {
+          if (regMode === 'countdown') {
+            if (prev <= 1) {
+              clearInterval(regIntervalRef.current);
+              setRegIsActive(false);
+              return 0;
+            }
+            return prev - 1;
+          } else {
+            return prev + 1;
+          }
+        });
+      }, 1000);
+    } else {
+      clearInterval(regIntervalRef.current);
+    }
+    return () => clearInterval(regIntervalRef.current);
+  }, [regIsActive, regMode]);
+
+  const handleStartReg = () => setRegIsActive(true);
+  const handlePauseReg = () => setRegIsActive(false);
+  const handleResetReg = () => {
+    setRegIsActive(false);
+    if (regMode === 'countdown') {
+      setRegTime(regInputMinutes * 60);
+    } else {
+      setRegTime(0);
+    }
+  };
+
+  const handleRegModeChange = (mode) => {
+    setRegMode(mode);
+    setRegIsActive(false);
+    if (mode === 'countdown') {
+      setRegTime(regInputMinutes * 60);
+    } else {
+      setRegTime(0);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // RUN MODE LOGIC (30 MENIT MAX)
+  // -------------------------------------------------------------
+  useEffect(() => {
+    if (runIsRunning) {
+      runIntervalRef.current = setInterval(() => {
+        setRunElapsedTime((prev) => {
+          if (prev >= TOTAL_MAX_TIME - 1) {
+            clearInterval(runIntervalRef.current);
+            setRunIsRunning(false);
+            setRunIsFinished(true);
+            return TOTAL_MAX_TIME;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      clearInterval(runIntervalRef.current);
+    }
+    return () => clearInterval(runIntervalRef.current);
+  }, [runIsRunning]);
+
+  const handleStartRun = () => {
+    setRunIsRunning(true);
+    setRunIsFinished(false);
+    setScreenshotMode(false);
+  };
+
+  const handlePauseRun = () => {
+    setRunIsRunning(false);
+  };
+
+  const handleResetRun = () => {
+    setRunIsRunning(false);
+    setRunElapsedTime(0);
+    setRunIsFinished(false);
+    setScreenshotMode(false);
+  };
+
+  const handleFinishRun = () => {
+    setRunIsRunning(false);
+    setRunIsFinished(true);
+  };
+
+  // -------------------------------------------------------------
+  // FORMULA SCORE KALKULASI
+  // -------------------------------------------------------------
+  // Maksimal 25 poin untuk nilai kecepatan, proporsional berdasarkan 30 menit (1800 detik)
+  const calculateTimeScore = (elapsedSec) => {
+    if (elapsedSec <= 0) return 0;
+    if (elapsedSec >= TOTAL_MAX_TIME) return 0;
+    const score = 25 * (1 - elapsedSec / TOTAL_MAX_TIME);
+    return Math.max(0, Math.min(25, Math.round(score * 10) / 10));
+  };
+
+  const timeScore = calculateTimeScore(runElapsedTime);
+  const totalScore = Math.round((scores.simpul + scores.kekuatan + scores.kerapihan + timeScore) * 10) / 10;
+
+  const getGrade = (score) => {
+    if (score >= 90) return { title: 'Sangat Memuaskan (A+)', color: 'text-emerald-400', badge: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' };
+    if (score >= 80) return { title: 'Bagus Sekali (A)', color: 'text-blue-400', badge: 'bg-blue-500/20 border-blue-500/40 text-blue-300' };
+    if (score >= 70) return { title: 'Cukup Baik (B)', color: 'text-amber-400', badge: 'bg-amber-500/20 border-amber-500/40 text-amber-300' };
+    if (score >= 50) return { title: 'Kurang (C)', color: 'text-orange-400', badge: 'bg-orange-500/20 border-orange-500/40 text-orange-300' };
+    return { title: 'Perlu Latihan Lagi (D)', color: 'text-red-400', badge: 'bg-red-500/20 border-red-500/40 text-red-300' };
+  };
+
+  const saveToHistory = () => {
+    const newEntry = {
+      id: Date.now(),
+      timeSec: runElapsedTime,
+      scores: { ...scores, time: timeScore },
+      total: totalScore,
+      date: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    };
+    setHistory([newEntry, ...history]);
+    alert('Penilaian berhasil disimpan ke riwayat!');
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
+      
+      {/* HEADER UTAMA WITH ANIMATION */}
+      <header className="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3 group">
+            <div className="p-2.5 bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-400 rounded-xl border border-amber-500/30 group-hover:scale-105 transition-transform duration-300">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <h1 className="font-bold text-base md:text-lg text-white tracking-tight flex items-center gap-2">
+                Pionering Timer Pro
+                <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">v2.0</span>
+              </h1>
+              <p className="text-xs text-slate-400">Pengerjaan & Penilaian Miniatur Pionering</p>
+            </div>
+          </div>
+
+          {/* TAB SWITCHER DENGAN ANIMASI SLIDE/Pill */}
+          <div className="relative flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+            <button
+              onClick={() => setActiveTab('run')}
+              className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                activeTab === 'run'
+                  ? 'text-slate-950 font-extrabold shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {activeTab === 'run' && (
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 rounded-xl -z-10 animate-fade-in" />
+              )}
+              <Gauge className="w-4 h-4" />
+              Mode Run (Lomba)
+            </button>
+
+            <button
+              onClick={() => setActiveTab('regular')}
+              className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                activeTab === 'regular'
+                  ? 'text-slate-950 font-extrabold shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {activeTab === 'regular' && (
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 rounded-xl -z-10 animate-fade-in" />
+              )}
+              <Timer className="w-4 h-4" />
+              Timer Biasa
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN CONTAINER WITH ANIMATED TAB SWITCHING */}
+      <main className="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 transition-all duration-500">
+        
+        {/* ======================================================== */}
+        {/* TAB 1: MODE RUN (LOMBA/PRAKTEK) */}
+        {/* ======================================================== */}
+        {activeTab === 'run' && (
+          <div className="space-y-6 animate-slide-up">
+            
+            {/* STAGE 1: TIMER PENGERJAAN RUN MODE */}
+            {!runIsFinished ? (
+              <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/40 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur relative overflow-hidden transition-all duration-500">
+                
+                {/* Glow Backdrop Effect jika berjalan */}
+                {runIsRunning && (
+                  <div className="absolute -top-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                  <div className="flex items-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-full text-xs font-semibold">
+                    <Flag className="w-3.5 h-3.5" />
+                    Batas Pengerjaan Total: 30 Menit (1800 Detik)
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${runIsRunning ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'}`} />
+                    <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
+                      {runIsRunning ? 'Sedang Berjalan' : 'Siap Mulai'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Target Timer Input */}
+                <div className="mb-6 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <label className="text-xs text-slate-300 font-semibold block">Target Pengerjaan Mandiri:</label>
+                    <p className="text-[11px] text-slate-500">Atur durasi target latihan kamu sendiri</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      disabled={runIsRunning}
+                      value={runTargetMinutes}
+                      onChange={(e) => setRunTargetMinutes(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
+                      className="w-20 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-center text-sm font-bold text-amber-400 focus:outline-none focus:border-amber-500 disabled:opacity-50"
+                    />
+                    <span className="text-xs text-slate-400 font-medium">Menit</span>
+                  </div>
+                </div>
+
+                {/* Main Timer Display */}
+                <div className="text-center py-10 my-4 bg-slate-950/90 rounded-3xl border border-slate-800/80 shadow-2xl relative">
+                  <p className="text-xs text-slate-500 font-mono tracking-widest uppercase mb-2">Waktu Terpakai</p>
+                  <div className={`text-7xl md:text-8xl font-mono font-black tracking-tight transition-colors duration-300 ${
+                    runIsRunning ? 'text-amber-400 drop-shadow-[0_0_25px_rgba(245,158,11,0.25)]' : 'text-slate-200'
+                  }`}>
+                    {formatTime(runElapsedTime)}
+                  </div>
+                  <div className="mt-3 text-xs text-slate-400 flex items-center justify-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-amber-500" />
+                    Sisa Alokasi Maksimal: <span className="font-mono font-bold text-slate-200">{formatTime(TOTAL_MAX_TIME - runElapsedTime)}</span>
+                  </div>
+                </div>
+
+                {/* Tombol Aksi */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {!runIsRunning ? (
+                    <button
+                      onClick={handleStartRun}
+                      className="flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-2xl transition-all shadow-lg shadow-amber-500/25 active:scale-95"
+                    >
+                      <Play className="w-5 h-5 fill-current" />
+                      Mulai Run
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePauseRun}
+                      className="flex items-center justify-center gap-2 py-4 px-6 bg-orange-500 hover:bg-orange-400 text-slate-950 font-black rounded-2xl transition-all shadow-lg shadow-orange-500/25 active:scale-95"
+                    >
+                      <Pause className="w-5 h-5 fill-current" />
+                      Jeda Timer
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleResetRun}
+                    className="flex items-center justify-center gap-2 py-4 px-6 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl transition-all active:scale-95 border border-slate-700"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    Reset
+                  </button>
+
+                  <button
+                    onClick={handleFinishRun}
+                    disabled={runElapsedTime === 0 && !runIsRunning}
+                    className="flex items-center justify-center gap-2 py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-emerald-600/25 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed sm:col-span-1"
+                  >
+                    <CheckCircle2 className="w-5 h-5" />
+                    Kelar (Penilaian)
+                  </button>
+                </div>
+              </div>
+            ) : (
+              
+              /* STAGE 2: KELAR MODE RUN -> LEMBAR PENILAIAN & SS INDICATOR */
+              <div className="space-y-6 animate-scale-up">
+                
+                {/* Banner Status Kelar */}
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-white text-base">Pengerjaan Selesai!</h2>
+                      <p className="text-xs text-slate-400">Total Waktu Pengerjaan: <span className="font-mono text-emerald-400 font-bold">{formatTime(runElapsedTime)}</span> ({runElapsedTime} Detik)</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setScreenshotMode(!screenshotMode)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                        screenshotMode 
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20' 
+                          : 'bg-slate-800 text-amber-400 border-slate-700 hover:bg-slate-700'
+                      }`}
+                    >
+                      <Camera className="w-4 h-4" />
+                      {screenshotMode ? 'Kembali Edit Nilai' : 'Mode Screenshot (SS)'}
+                    </button>
+
+                    <button
+                      onClick={handleResetRun}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium border border-slate-700"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Ulangi
+                    </button>
+                  </div>
+                </div>
+
+                {/* MODES: FORM KOREKSI vs SCREENSHOT CARD */}
+                {!screenshotMode ? (
+                  /* Form Koreksi Langsung */
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur space-y-6">
+                    <div className="border-b border-slate-800 pb-4 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                          <ShieldCheck className="w-5 h-5 text-amber-400" />
+                          Koreksi & Penilaian Miniatur Pionering
+                        </h3>
+                        <p className="text-xs text-slate-400">Geser slider untuk menilai tiap aspek (Maksimal 25 Poin)</p>
+                      </div>
+                      <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full font-mono">
+                        Maks Total: 100
+                      </span>
+                    </div>
+
+                    {/* 3 Aspek Manual */}
+                    <div className="space-y-5">
+                      
+                      {/* Simpul/Ikatan */}
+                      <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-semibold text-slate-200">1. Ketepatan Simpul / Ikatan</span>
+                          <span className="font-mono text-amber-400 font-extrabold bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+                            {scores.simpul} / 25
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="25"
+                          value={scores.simpul}
+                          onChange={(e) => setScores({ ...scores, simpul: parseInt(e.target.value) })}
+                          className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                        />
+                        <p className="text-[11px] text-slate-500">Penyambung, ikatan pangkal, jangkar, silang & palang tepat fungsi.</p>
+                      </div>
+
+                      {/* Kekuatan */}
+                      <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-semibold text-slate-200">2. Kekuatan Struktural</span>
+                          <span className="font-mono text-amber-400 font-extrabold bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+                            {scores.kekuatan} / 25
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="25"
+                          value={scores.kekuatan}
+                          onChange={(e) => setScores({ ...scores, kekuatan: parseInt(e.target.value) })}
+                          className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                        />
+                        <p className="text-[11px] text-slate-500">Kekencangan tali, kokoh, miniatur tidak reot atau goyang.</p>
+                      </div>
+
+                      {/* Kerapihan */}
+                      <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-semibold text-slate-200">3. Kerapihan & Estetika</span>
+                          <span className="font-mono text-amber-400 font-extrabold bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+                            {scores.kerapihan} / 25
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="25"
+                          value={scores.kerapihan}
+                          onChange={(e) => setScores({ ...scores, kerapihan: parseInt(e.target.value) })}
+                          className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                        />
+                        <p className="text-[11px] text-slate-500">Sisa ujung tali terikat rapi, simetri, serta kebersihan karya.</p>
+                      </div>
+
+                      {/* Kecepatan Waktu (Otomatis) */}
+                      <div className="bg-gradient-to-r from-slate-950 to-slate-900 p-4 rounded-2xl border border-amber-500/30 space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-semibold text-amber-300 flex items-center gap-2">
+                            <Clock className="w-4 h-4" /> 4. Kecepatan Waktu (Otomatis)
+                          </span>
+                          <span className="font-mono text-emerald-400 font-extrabold bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
+                            {timeScore} / 25
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-400 flex justify-between pt-1 font-mono">
+                          <span>Selesai: {formatTime(runElapsedTime)} ({runElapsedTime}s)</span>
+                          <span>Batas 30 Min (1800s)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Overall Score Box */}
+                    <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+                      <div>
+                        <span className="text-xs text-slate-400 font-mono uppercase tracking-wider block mb-1">Skor Keseluruhan</span>
+                        <div className="text-4xl font-black text-white flex items-baseline gap-1">
+                          {totalScore} <span className="text-sm font-normal text-slate-500">/ 100</span>
+                        </div>
+                        <span className={`inline-block text-xs font-bold px-2.5 py-0.5 mt-2 rounded-full border ${getGrade(totalScore).badge}`}>
+                          {getGrade(totalScore).title}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          onClick={saveToHistory}
+                          className="flex items-center gap-2 py-3 px-5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 transition-all active:scale-95 text-xs"
+                        >
+                          <Trophy className="w-4 h-4 text-amber-400" />
+                          Simpan Ke Riwayat
+                        </button>
+                        
+                        <button
+                          onClick={() => setScreenshotMode(true)}
+                          className="flex items-center gap-2 py-3 px-5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95 text-xs"
+                        >
+                          <Camera className="w-4 h-4" />
+                          Tampilkan Kartu SS
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  
+                  /* INDIKATOR SCREENSHOT CARD (Tampilan khusus untuk di-SS / dikirim) */
+                  <div className="bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden animate-fade-in">
+                    
+                    {/* Watermark / Header SS */}
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-6 h-6 text-amber-400" />
+                        <div>
+                          <h3 className="font-extrabold text-lg text-white tracking-tight">KARTU HASIL PENILAIAN</h3>
+                          <p className="text-[11px] text-slate-400">Miniatur Pionering Pramuka</p>
+                        </div>
+                      </div>
+                      <div className="text-right font-mono text-xs text-slate-500">
+                        {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+
+                    {/* Breakdown 4 Aspek dalam Grid SS */}
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <span className="text-[11px] text-slate-400 block mb-1">1. Simpul/Ikatan</span>
+                        <span className="text-lg font-mono font-bold text-amber-400">{scores.simpul} <span className="text-xs text-slate-500">/25</span></span>
+                      </div>
+                      <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <span className="text-[11px] text-slate-400 block mb-1">2. Kekuatan</span>
+                        <span className="text-lg font-mono font-bold text-amber-400">{scores.kekuatan} <span className="text-xs text-slate-500">/25</span></span>
+                      </div>
+                      <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <span className="text-[11px] text-slate-400 block mb-1">3. Kerapihan</span>
+                        <span className="text-lg font-mono font-bold text-amber-400">{scores.kerapihan} <span className="text-xs text-slate-500">/25</span></span>
+                      </div>
+                      <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <span className="text-[11px] text-slate-400 block mb-1">4. Kecepatan ({formatTime(runElapsedTime)})</span>
+                        <span className="text-lg font-mono font-bold text-emerald-400">{timeScore} <span className="text-xs text-slate-500">/25</span></span>
+                      </div>
+                    </div>
+
+                    {/* Total Grand Score Card */}
+                    <div className="bg-gradient-to-br from-amber-500/20 via-slate-950 to-slate-950 p-6 rounded-2xl border border-amber-500/30 text-center relative">
+                      <p className="text-xs font-mono uppercase text-amber-400 tracking-widest mb-1">NILAI AKHIR KESELURUHAN</p>
+                      <div className="text-6xl font-black text-white font-mono my-1">{totalScore}</div>
+                      <p className={`text-xs font-bold inline-block px-3 py-1 rounded-full mt-2 border ${getGrade(totalScore).badge}`}>
+                        {getGrade(totalScore).title}
+                      </p>
+                    </div>
+
+                    {/* Info Tambahan Indikator SS */}
+                    <p className="text-center text-[10px] text-slate-500 mt-4 italic">
+                      * Silakan tangkap layar (screenshot) tampilan kartu ini untuk keperluan dokumentasi rekapitulasi nilai.
+                    </p>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 2: TIMER BIASA */}
+        {/* ======================================================== */}
+        {activeTab === 'regular' && (
+          <div className="max-w-xl mx-auto animate-slide-up">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur text-center relative overflow-hidden">
+              
+              {/* Selector Mode Stopwatch / Countdown */}
+              <div className="inline-flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6">
+                <button
+                  onClick={() => handleRegModeChange('stopwatch')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    regMode === 'stopwatch' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Stopwatch
+                </button>
+                <button
+                  onClick={() => handleRegModeChange('countdown')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    regMode === 'countdown' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Countdown (Hitung Mundur)
+                </button>
+              </div>
+
+              {/* Input durasi jika Countdown */}
+              {regMode === 'countdown' && (
+                <div className="mb-6 flex items-center justify-center gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800 w-fit mx-auto">
+                  <label className="text-xs text-slate-300 font-medium">Durasi (Menit):</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="180"
+                    value={regInputMinutes}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 1;
+                      setRegInputMinutes(val);
+                      if (!regIsActive) setRegTime(val * 60);
+                    }}
+                    className="w-16 bg-slate-900 border border-slate-700 rounded-lg py-1 text-center text-sm font-bold text-amber-400 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              )}
+
+              {/* Display Waktu */}
+              <div className="py-12 my-2 bg-slate-950/90 rounded-3xl border border-slate-800 shadow-inner">
+                <div className={`text-7xl md:text-8xl font-mono font-black tracking-tight ${
+                  regIsActive ? 'text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.2)]' : 'text-slate-200'
+                }`}>
+                  {formatTime(regTime)}
+                </div>
+              </div>
+
+              {/* Control Buttons */}
+              <div className="flex justify-center gap-3 mt-6">
+                {!regIsActive ? (
+                  <button
+                    onClick={handleStartReg}
+                    className="flex items-center gap-2 py-3.5 px-8 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95"
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                    Mulai
+                  </button>
+                ) : (
+                  <button
+                    onClick={handlePauseReg}
+                    className="flex items-center gap-2 py-3.5 px-8 bg-orange-500 hover:bg-orange-400 text-slate-950 font-black text-sm rounded-xl transition-all shadow-lg shadow-orange-500/20 active:scale-95"
+                  >
+                    <Pause className="w-4 h-4 fill-current" />
+                    Jeda
+                  </button>
+                )}
+
+                <button
+                  onClick={handleResetReg}
+                  className="flex items-center gap-2 py-3.5 px-6 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-xl transition-all active:scale-95 border border-slate-700"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* RIWAYAT PENILAIAN */}
+        {/* ======================================================== */}
+        {history.length > 0 && (
+          <div className="mt-8 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur animate-fade-in">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+              <h3 className="font-bold text-sm text-white flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                Riwayat Rekap Nilai
+              </h3>
+              <button
+                onClick={() => setHistory([])}
+                className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Hapus Semua
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-slate-950 text-slate-400 font-mono uppercase">
+                  <tr>
+                    <th className="p-3">Waktu Input</th>
+                    <th className="p-3">Durasi Pengerjaan</th>
+                    <th className="p-3">Simpul</th>
+                    <th className="p-3">Kekuatan</th>
+                    <th className="p-3">Kerapihan</th>
+                    <th className="p-3">Poin Kecepatan</th>
+                    <th className="p-3 text-amber-400 font-bold">Total Nilai</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-mono">
+                  {history.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="p-3 text-slate-400">{item.date}</td>
+                      <td className="p-3 text-amber-300">{formatTime(item.timeSec)}</td>
+                      <td className="p-3">{item.scores.simpul}</td>
+                      <td className="p-3">{item.scores.kekuatan}</td>
+                      <td className="p-3">{item.scores.kerapihan}</td>
+                      <td className="p-3 text-emerald-400">{item.scores.time}</td>
+                      <td className="p-3 font-extrabold text-amber-400 text-sm">{item.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
+}
+
+```
