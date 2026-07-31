@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PUPK Master SMP - Multi Tab & Pure AI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-[100dvh] flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-slate-950 overflow-hidden">
+
+    <!-- Header Navigation Sticky -->
+    <header class="border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md sticky top-0 z-50 px-3 py-2.5 sm:px-4 sm:py-3 shrink-0">
+        <div class="max-w-4xl mx-auto flex justify-between items-center gap-2">
+            <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="backToMenu()">
+                <div class="bg-gradient-to-br from-emerald-400 to-teal-600 p-2 rounded-xl text-slate-950 font-black shadow-lg shadow-emerald-500/20 shrink-0">
+                    <i data-lucide="sparkles" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="font-black text-sm sm:text-base leading-tight tracking-wide flex items-center gap-1.5 truncate text-white">
+                        PUPK SMP <span class="text-[9px] sm:text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 font-bold shrink-0">PURE AI</span>
+                    </h1>
+                    <p class="text-[10px] sm:text-xs text-slate-400 truncate">Sistem Lomba Per-Materi & Tulis Buku</p>
+                </div>
+            </div>
+
+            <div id="header-timer" class="hidden items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl shrink-0">
+                <i data-lucide="clock" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
+                <span id="timer-display" class="font-mono font-black text-emerald-400 text-xs sm:text-sm">00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Dynamic Container -->
+    <main class="max-w-4xl mx-auto px-3 py-3 sm:px-4 sm:py-4 w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+
+        <!-- MENU UTAMA SCREEN -->
+        <div id="menu-screen" class="flex-1 flex flex-col justify-center space-y-4 overflow-y-auto custom-scroll pr-1">
+            <div class="text-center space-y-1 my-2">
+                <span class="text-[10px] sm:text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest">
+                    Materi Lomba PUPK SMP / MTs
+                </span>
+                <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">Pilih Mode Generator AI</h2>
+                <p class="text-slate-400 max-w-md mx-auto text-xs">Soal 100% selalu di-generate fresh secara otomatis oleh AI Gemini.</p>
+            </div>
+
+            <!-- PILIHAN FORMAT SOAL -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 space-y-2">
+                <label class="text-[10px] sm:text-xs font-extrabold text-slate-300 uppercase tracking-wider block">1. Pilih Format Tipe Soal:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="setQuestionFormat('essay')" id="fmt-essay" class="fmt-btn py-2 px-3 rounded-xl border border-emerald-500/50 bg-emerald-500 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+                        <i data-lucide="pen-tool" class="w-4 h-4"></i> Isian (Tulis di Buku)
+                    </button>
+                    <button type="button" onclick="setQuestionFormat('mcq')" id="fmt-mcq" class="fmt-btn py-2 px-3 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700 transition flex items-center justify-center gap-1.5">
+                        <i data-lucide="check-square" class="w-4 h-4"></i> Pilihan Ganda (PG)
+                    </button>
+                </div>
+                <p id="fmt-desc" class="text-[10px] sm:text-[11px] text-amber-400 font-medium">Format Isian: Hanya pertanyaan tanpa opsi. Tulis di buku, lalu cocokkan dengan kunci di akhir.</p>
+            </div>
+
+            <!-- MODE BIASA SECTION -->
+            <div class="space-y-2">
+                <h3 class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                    <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> 2. Pilih Kategori Latihan AI (Single Layer)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <!-- PU Card -->
+                    <div onclick="generateAIMode('PU')" class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 p-3.5 rounded-2xl cursor-pointer transition active:scale-95 group shadow-lg flex sm:flex-col items-center sm:items-start gap-3">
+                        <div class="w-9 h-9 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-sm">PU Tangerang</h4>
+                            <p class="text-[10px] text-slate-400">15 Soal Sejarah Kab. Tangerang</p>
+                        </div>
+                    </div>
+
+                    <!-- PK Card -->
+                    <div onclick="generateAIMode('PK')" class="bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 p-3.5 rounded-2xl cursor-pointer transition active:scale-95 group shadow-lg flex sm:flex-col items-center sm:items-start gap-3">
+                        <div class="w-9 h-9 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-sm">PK Boyman 1-3</h4>
+                            <p class="text-[10px] text-slate-400">20 Soal Boyman BAB 1, 2 & 3</p>
+                        </div>
+                    </div>
+
+                    <!-- PAI Card -->
+                    <div onclick="generateAIMode('PAI')" class="bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 p-3.5 rounded-2xl cursor-pointer transition active:scale-95 group shadow-lg flex sm:flex-col items-center sm:items-start gap-3">
+                        <div class="w-9 h-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="book-marked" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-sm">PAI SMP 7–8</h4>
+                            <p class="text-[10px] text-slate-400">15 Soal PAI SMP Kelas 7 & 8</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE RUN SECTION -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 border border-emerald-500/30 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center font-bold shrink-0">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-base text-white">Mode RUN (Simulasi Lomba Per-Materi)</h3>
+                        <p class="text-[11px] text-slate-400">50 Soal AI (15 PU + 20 PK + 15 PAI) Dikelompokkan Per Halaman Materi</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1.5">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Durasi Timer Lomba:</label>
+                        <span id="run-timer-val" class="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">15 Menit</span>
+                    </div>
+                    <input type="range" id="run-timer-range" min="5" max="60" step="5" value="15" class="w-full accent-emerald-500 bg-slate-800 rounded-lg cursor-pointer h-1.5">
+                </div>
+
+                <button onclick="generateAIMode('RUN')" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-slate-950 font-black rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Generate 50 Soal Multi-Tab & Mulai RUN
+                </button>
+            </div>
+        </div>
+
+        <!-- LAYAR QUIZ / SIMULASI PER-MATERI -->
+        <div id="quiz-screen" class="hidden flex-1 flex-col min-h-0 h-full overflow-hidden space-y-2">
+            
+            <!-- Banner Top Header -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex justify-between items-center gap-2 shrink-0 shadow-md">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span id="quiz-badge" class="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 shrink-0">MODE RUN</span>
+                        <span id="fmt-badge" class="text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 truncate shrink-0">ISIAN</span>
+                    </div>
+                    <h2 id="quiz-title" class="text-xs sm:text-sm font-black text-white truncate mt-0.5">Simulasi Lomba PUPK SMP</h2>
+                </div>
+
+                <button onclick="backToMenu()" class="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700 transition shrink-0">
+                    Menu Utama
+                </button>
+            </div>
+
+            <!-- TAB NAVIGASI MATERI (KHUSUS MODE RUN) -->
+            <div id="run-material-tabs" class="hidden grid-cols-3 gap-1.5 shrink-0 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchMaterialTab('PU')" id="tab-PU" class="tab-btn py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-black transition flex items-center justify-center gap-1 text-slate-400 hover:text-white">
+                    📍 PU (15 Soal)
+                </button>
+                <button onclick="switchMaterialTab('PK')" id="tab-PK" class="tab-btn py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-black transition flex items-center justify-center gap-1 text-slate-400 hover:text-white">
+                    🧭 PK (20 Soal)
+                </button>
+                <button onclick="switchMaterialTab('PAI')" id="tab-PAI" class="tab-btn py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-black transition flex items-center justify-center gap-1 text-slate-400 hover:text-white">
+                    📖 PAI (15 Soal)
+                </button>
+            </div>
+
+            <!-- AI Generating Loading State -->
+            <div id="ai-loading" class="hidden flex-1 flex-col items-center justify-center bg-slate-900/90 border border-emerald-500/30 p-6 rounded-2xl text-center space-y-2">
+                <div class="w-8 h-8 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p class="text-emerald-400 font-black text-sm tracking-wide">MENGHUBUNGI AI GEMINI...</p>
+                <p class="text-slate-300 text-xs">Sedang membuat soal-soal fresh baru khusus materi Juknis SMP...</p>
+            </div>
+
+            <!-- Error Offline State -->
+            <div id="ai-error" class="hidden flex-1 flex-col items-center justify-center bg-red-950/80 border border-red-500/40 p-6 rounded-2xl text-center space-y-2">
+                <i data-lucide="wifi-off" class="w-8 h-8 text-red-400 mx-auto"></i>
+                <p class="text-red-400 font-extrabold text-sm">Gagal Mengisi Soal dari AI!</p>
+                <p class="text-slate-300 text-xs" id="ai-error-msg">Pastikan koneksi internet aktif untuk melakukan reroll soal baru.</p>
+                <button onclick="retryAIGeneration()" class="px-4 py-2 bg-red-500 hover:bg-red-400 text-slate-950 font-black rounded-lg text-xs transition">
+                    Coba Lagi
+                </button>
+            </div>
+
+            <!-- AREA CONTAINER SOAL (FULL SCROLLABLE & RAPI) -->
+            <div id="questions-viewport" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-3 min-h-0">
+                <!-- Cards Soal Di-render Di Sini -->
+            </div>
+
+            <!-- Result Box Summary & Refleksi Nilai -->
+            <div id="score-summary" class="hidden bg-slate-900 border border-emerald-500/40 rounded-xl p-3 sm:p-4 text-center space-y-2 shrink-0 shadow-2xl">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">KUNCI JAWABAN & HASIL REKAPITULASI</span>
+                
+                <!-- KOTAK REFLEKSI SKOR PILIHAN GANDA -->
+                <div id="score-details-box" class="hidden grid-cols-3 gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800 my-1">
+                    <div class="bg-emerald-950/40 border border-emerald-500/30 p-2 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-[9px] text-emerald-400 font-bold uppercase">BENAR</span>
+                        <span id="res-correct" class="text-base sm:text-lg font-black text-emerald-400 font-mono">0 Soal</span>
+                    </div>
+                    <div class="bg-red-950/40 border border-red-500/30 p-2 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-[9px] text-red-400 font-bold uppercase">SALAH</span>
+                        <span id="res-wrong" class="text-base sm:text-lg font-black text-red-400 font-mono">0 Soal</span>
+                    </div>
+                    <div class="bg-amber-950/40 border border-amber-500/30 p-2 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-[9px] text-amber-400 font-bold uppercase">AKURASI</span>
+                        <span id="res-percent" class="text-base sm:text-lg font-black text-amber-400 font-mono">0%</span>
+                    </div>
+                </div>
+
+                <p id="reflection-msg" class="text-xs text-emerald-300 font-semibold italic bg-emerald-950/30 py-1.5 px-3 rounded-lg border border-emerald-500/20">
+                    Silakan cocokkan jawaban pada setiap halaman materi dengan catatan di buku Anda.
+                </p>
+            </div>
+
+            <!-- ACTION FOOTER BAR (NAVIGASI & UNLOCK JAWABAN) -->
+            <div id="quiz-actions" class="hidden shrink-0 flex flex-col gap-1.5 pt-1">
+                <!-- Tombol Navigasi Antar Halaman Materi (Mode RUN) -->
+                <div id="nav-material-btns" class="hidden grid-cols-2 gap-2">
+                    <button onclick="prevMaterialTab()" id="btn-prev-tab" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition text-xs flex items-center justify-center gap-1">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Materi Sebelumnya
+                    </button>
+                    <button onclick="nextMaterialTab()" id="btn-next-tab" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition text-xs flex items-center justify-center gap-1">
+                        Materi Berikutnya <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <!-- Tombol Buka Kunci Jawaban -->
+                <button id="btn-submit" onclick="submitAnswers()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-slate-950 font-black rounded-xl shadow-lg transition flex items-center justify-center gap-1.5 text-xs">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> Buka Kunci Jawaban & Periksa Nilai
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-2 text-center text-[10px] text-slate-500 border-t border-slate-900 shrink-0">
+        PUPK SMP Multi-Tab AI &copy; 2026
+    </footer>
+
+    <!-- JavaScript Engine -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+
+        // Gemini API Configuration
+        const apiKey = "";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        // App State
+        let selectedFormat = 'essay'; // 'essay' atau 'mcq'
+        let currentMode = 'RUN'; // 'PU', 'PK', 'PAI', atau 'RUN'
+        let activeQuestions = { PU: [], PK: [], PAI: [] }; // Multi-material grouping
+        let currentMaterialTab = 'PU'; // Active tab in RUN mode
+        let userAnswers = {};
+        let runTimerInterval = null;
+        let selectedRunMinutes = 15;
+
+        // Timer Range Listener
+        document.getElementById('run-timer-range').addEventListener('input', (e) => {
+            selectedRunMinutes = parseInt(e.target.value);
+            document.getElementById('run-timer-val').innerText = `${selectedRunMinutes} Menit`;
+        });
+
+        // Set Format Soal (Isian vs PG)
+        function setQuestionFormat(fmt) {
+            selectedFormat = fmt;
+            const essayBtn = document.getElementById('fmt-essay');
+            const mcqBtn = document.getElementById('fmt-mcq');
+            const fmtDesc = document.getElementById('fmt-desc');
+
+            if (fmt === 'essay') {
+                essayBtn.className = "fmt-btn py-2 px-3 rounded-xl border border-emerald-500/50 bg-emerald-500 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10";
+                mcqBtn.className = "fmt-btn py-2 px-3 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700 transition flex items-center justify-center gap-1.5";
+                fmtDesc.innerText = "Format Isian: Hanya pertanyaan tanpa opsi. Tulis di buku, lalu cocokkan dengan kunci di akhir.";
+            } else {
+                mcqBtn.className = "fmt-btn py-2 px-3 rounded-xl border border-emerald-500/50 bg-emerald-500 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10";
+                essayBtn.className = "fmt-btn py-2 px-3 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700 transition flex items-center justify-center gap-1.5";
+                fmtDesc.innerText = "Format Pilihan Ganda: Menampilkan opsi A, B, C, D yang bisa langsung diklik untuk latihan interaktif.";
+            }
+        }
+
+        // Generate AI Mode Handler
+        async function generateAIMode(mode) {
+            currentMode = mode;
+            userAnswers = {};
+
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-loading').classList.add('flex');
+            document.getElementById('ai-error').classList.add('hidden');
+            document.getElementById('quiz-actions').classList.add('hidden');
+            document.getElementById('score-summary').classList.add('hidden');
+            document.getElementById('questions-viewport').innerHTML = '';
+
+            const modeConfig = {
+                PU: { title: "Latihan AI PU Sejarah Kab. Tangerang", badge: "15 SOAL PU FRESH AI", countPU: 15, countPK: 0, countPAI: 0 },
+                PK: { title: "Latihan AI PK Boyman BAB 1 - 3", badge: "20 SOAL PK FRESH AI", countPU: 0, countPK: 20, countPAI: 0 },
+                PAI: { title: "Latihan AI PAI SMP Kelas 7 - 8", badge: "15 SOAL PAI FRESH AI", countPU: 0, countPK: 0, countPAI: 15 },
+                RUN: { title: "Simulasi Lomba RUN PUPK SMP", badge: "MODE RUN (50 SOAL MULTI-TAB)", countPU: 15, countPK: 20, countPAI: 15 }
+            };
+
+            const cfg = modeConfig[mode];
+            document.getElementById('quiz-title').innerText = cfg.title;
+            document.getElementById('quiz-badge').innerText = cfg.badge;
+            document.getElementById('fmt-badge').innerText = selectedFormat === 'essay' ? "ISIAN BUKU" : "PILIHAN GANDA";
+
+            try {
+                activeQuestions = await fetchAIQuestionsFromGemini(cfg.countPU, cfg.countPK, cfg.countPAI, selectedFormat);
+                
+                document.getElementById('ai-loading').classList.add('hidden');
+                document.getElementById('ai-loading').classList.remove('flex');
+                document.getElementById('quiz-actions').classList.remove('hidden');
+
+                if (mode === 'RUN') {
+                    document.getElementById('run-material-tabs').classList.remove('hidden');
+                    document.getElementById('run-material-tabs').classList.add('grid');
+                    document.getElementById('nav-material-btns').classList.remove('hidden');
+                    document.getElementById('nav-material-btns').classList.add('grid');
+                    switchMaterialTab('PU');
+                    startTimer(selectedRunMinutes * 60);
+                } else {
+                    document.getElementById('run-material-tabs').classList.add('hidden');
+                    document.getElementById('nav-material-btns').classList.add('hidden');
+                    document.getElementById('header-timer').classList.add('hidden');
+                    currentMaterialTab = mode;
+                    renderMaterialQuestions(mode);
+                }
+            } catch (err) {
+                document.getElementById('ai-loading').classList.add('hidden');
+                document.getElementById('ai-loading').classList.remove('flex');
+                document.getElementById('ai-error').classList.remove('hidden');
+                document.getElementById('ai-error').classList.add('flex');
+            }
+        }
+
+        function retryAIGeneration() {
+            generateAIMode(currentMode);
+        }
+
+        // Fetch AI Questions Gemini API
+        async function fetchAIQuestionsFromGemini(countPU, countPK, countPAI, format) {
+            let formatInstruction = "";
+            if (format === 'essay') {
+                formatInstruction = `Format soal: ISIAN/ESAI Singkat tanpa pilihan ganda A/B/C/D.
+JSON Output WAJIB berupa objek dengan key "PU", "PK", "PAI" yang masing-masing berisi array soal:
+{
+  "PU": [ { "q": "Pertanyaan", "ans": "Jawaban Singkat Padat", "exp": "Penjelasan Kunci" } ],
+  "PK": [ { "q": "Pertanyaan", "ans": "Jawaban Singkat Padat", "exp": "Penjelasan Kunci" } ],
+  "PAI": [ { "q": "Pertanyaan", "ans": "Jawaban Singkat Padat", "exp": "Penjelasan Kunci" } ]
+}`;
+            } else {
+                formatInstruction = `Format soal: PILIHAN GANDA (A, B, C, D).
+JSON Output WAJIB berupa objek dengan key "PU", "PK", "PAI" yang masing-masing berisi array soal:
+{
+  "PU": [ { "q": "Pertanyaan", "options": ["A", "B", "C", "D"], "ans": 0, "exp": "Penjelasan" } ],
+  "PK": [ { "q": "Pertanyaan", "options": ["A", "B", "C", "D"], "ans": 0, "exp": "Penjelasan" } ],
+  "PAI": [ { "q": "Pertanyaan", "options": ["A", "B", "C", "D"], "ans": 0, "exp": "Penjelasan" } ]
+}
+Keterangan: "ans" adalah index angka 0 (A), 1 (B), 2 (C), 3 (D).`;
+            }
+
+            const prompt = `Buatkan soal fresh acak baru untuk lomba PUPK Pramuka SMP dengan distribusi:
+- PU (${countPU} soal): Sejarah Kabupaten Tangerang (Aria Wangsakara, Tigaraksa, Cisadane, Pintu Air 10, HUT 13 Oktober)
+- PK (${countPK} soal): Buku Boyman BAB 1, 2, dan 3 (Baden Powell, Morse, Semaphore, Simpul, Lambang)
+- PAI (${countPAI} soal): Agama Islam SMP Kelas 7 & 8 (Kitab Allah, Sujud Sahwi, Khulafaur Rasyidin, Zakat, Asmaul Husna)
+
+${formatInstruction}
+
+HANYA keluarkan JSON MURNI tanpa markdown tambahan.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    let txt = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (txt) return JSON.parse(txt);
+                } catch (e) {
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+
+            throw new Error('Gagal memuat soal AI');
+        }
+
+        // Switch Material Tab
+        function switchMaterialTab(matKey) {
+            currentMaterialTab = matKey;
+
+            // Highlight Tab Buttons
+            ['PU', 'PK', 'PAI'].forEach(k => {
+                const btn = document.getElementById(`tab-${k}`);
+                if (k === matKey) {
+                    btn.className = "tab-btn py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-black transition flex items-center justify-center gap-1 bg-emerald-500 text-slate-950 shadow-md";
+                } else {
+                    btn.className = "tab-btn py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-black transition flex items-center justify-center gap-1 text-slate-400 hover:text-white bg-slate-900";
+                }
+            });
+
+            renderMaterialQuestions(matKey);
+        }
+
+        function prevMaterialTab() {
+            if (currentMaterialTab === 'PK') switchMaterialTab('PU');
+            else if (currentMaterialTab === 'PAI') switchMaterialTab('PK');
+        }
+
+        function nextMaterialTab() {
+            if (currentMaterialTab === 'PU') switchMaterialTab('PK');
+            else if (currentMaterialTab === 'PK') switchMaterialTab('PAI');
+        }
+
+        // Render Questions For Specific Material
+        function renderMaterialQuestions(matKey) {
+            const viewport = document.getElementById('questions-viewport');
+            viewport.innerHTML = '';
+
+            const questions = activeQuestions[matKey] || [];
+
+            if (questions.length === 0) {
+                viewport.innerHTML = `<div class="text-center text-slate-400 text-xs py-10">Tidak ada soal untuk materi ini.</div>`;
+                return;
+            }
+
+            questions.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 shadow-md";
+                card.id = `q-card-${matKey}-${index}`;
+
+                let contentBody = '';
+
+                if (selectedFormat === 'essay') {
+                    // Format Isian
+                    contentBody = `
+                        <div id="exp-${matKey}-${index}" class="hidden p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 font-medium space-y-1">
+                            <span class="font-bold text-amber-400 block text-[11px]">KUNCI JAWABAN ISIAN:</span>
+                            <div class="text-xs font-black text-white bg-slate-950 p-2 rounded-lg border border-slate-800">${item.ans}</div>
+                            <span class="font-bold text-emerald-400 block mt-1">Pembahasan:</span>
+                            ${item.exp}
+                        </div>
+                    `;
+                } else {
+                    // Format Pilihan Ganda
+                    let optionsHTML = '';
+                    item.options.forEach((opt, optIdx) => {
+                        optionsHTML += `
+                            <label id="opt-label-${matKey}-${index}-${optIdx}" onclick="selectOption('${matKey}', ${index}, ${optIdx})" class="flex items-center gap-2.5 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
+                                <input type="radio" name="q-${matKey}-${index}" value="${optIdx}" class="accent-emerald-500 w-3.5 h-3.5" ${userAnswers[`${matKey}-${index}`] === optIdx ? 'checked' : ''}>
+                                <span class="text-xs text-slate-200 font-medium">${String.fromCharCode(65 + optIdx)}. ${opt}</span>
+                            </label>
+                        `;
+                    });
+
+                    contentBody = `
+                        <div class="space-y-1.5 mt-2">
+                            ${optionsHTML}
+                        </div>
+                        <div id="exp-${matKey}-${index}" class="hidden p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 font-medium">
+                            <span class="font-bold text-emerald-400 block mb-0.5">Kunci & Pembahasan:</span>
+                            Jawaban Benar: <b>${String.fromCharCode(65 + item.ans)}. ${item.options[item.ans]}</b><br>
+                            ${item.exp}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-2">
+                        <span id="q-badge-${matKey}-${index}" class="text-[11px] font-black bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-lg border border-emerald-500/30 shrink-0">${index + 1}</span>
+                        <p class="text-xs font-bold text-white leading-relaxed">${item.q}</p>
+                    </div>
+                    ${contentBody}
+                `;
+
+                viewport.appendChild(card);
+            });
+        }
+
+        function selectOption(matKey, qIdx, optIdx) {
+            userAnswers[`${matKey}-${qIdx}`] = optIdx;
+        }
+
+        // Buka Kunci Jawaban & Evaluasi Nilai Detail
+        function submitAnswers() {
+            if (runTimerInterval) clearInterval(runTimerInterval);
+
+            let totalQuestions = 0;
+            let totalCorrect = 0;
+
+            ['PU', 'PK', 'PAI'].forEach(matKey => {
+                const questions = activeQuestions[matKey] || [];
+                totalQuestions += questions.length;
+
+                questions.forEach((item, index) => {
+                    const expBox = document.getElementById(`exp-${matKey}-${index}`);
+                    if (expBox) expBox.classList.remove('hidden');
+
+                    const userChoice = userAnswers[`${matKey}-${index}`];
+                    const card = document.getElementById(`q-card-${matKey}-${index}`);
+                    const badge = document.getElementById(`q-badge-${matKey}-${index}`);
+
+                    if (selectedFormat === 'mcq') {
+                        if (userChoice !== undefined && userChoice === item.ans) {
+                            totalCorrect++;
+                            if (card) card.className = "bg-slate-900 border-2 border-emerald-500 rounded-2xl p-3.5 space-y-2.5 shadow-md";
+                            if (badge) badge.className = "text-[11px] font-black bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-lg border border-emerald-400 shrink-0";
+                        } else {
+                            // JAWABAN SALAH / TIDAK DIISI: TANDA MERAH
+                            if (card) card.className = "bg-slate-900 border-2 border-red-500 rounded-2xl p-3.5 space-y-2.5 shadow-md";
+                            if (badge) badge.className = "text-[11px] font-black bg-red-500 text-white px-2 py-0.5 rounded-lg border border-red-400 shrink-0";
+
+                            // Sorot Opsi Yang Dipilih Salah
+                            if (userChoice !== undefined) {
+                                const wrongLabel = document.getElementById(`opt-label-${matKey}-${index}-${userChoice}`);
+                                if (wrongLabel) wrongLabel.className = "flex items-center gap-2.5 p-2.5 bg-red-950/60 border-2 border-red-500 rounded-xl cursor-pointer text-red-200 font-bold";
+                            }
+                            // Sorot Opsi Yang Seharusnya Benar
+                            const correctLabel = document.getElementById(`opt-label-${matKey}-${index}-${item.ans}`);
+                            if (correctLabel) correctLabel.className = "flex items-center gap-2.5 p-2.5 bg-emerald-950/80 border-2 border-emerald-500 rounded-xl cursor-pointer text-emerald-200 font-bold";
+                        }
+                    } else {
+                        // Mode Isian
+                        if (card) card.className = "bg-slate-900 border-2 border-emerald-500/60 rounded-2xl p-3.5 space-y-2.5 shadow-md";
+                    }
+                });
+            });
+
+            // TAMPILKAN REFLEKSI HASIL SKOR
+            const scoreDetailsBox = document.getElementById('score-details-box');
+            const reflectionMsg = document.getElementById('reflection-msg');
+
+            if (selectedFormat === 'mcq' && totalQuestions > 0) {
+                const totalWrong = totalQuestions - totalCorrect;
+                const accuracy = ((totalCorrect / totalQuestions) * 100).toFixed(1);
+
+                document.getElementById('res-correct').innerText = `${totalCorrect} Soal`;
+                document.getElementById('res-wrong').innerText = `${totalWrong} Soal`;
+                document.getElementById('res-percent').innerText = `${accuracy}%`;
+
+                scoreDetailsBox.classList.remove('hidden');
+                scoreDetailsBox.classList.add('grid');
+
+                if (accuracy >= 85) {
+                    reflectionMsg.innerText = `🎉 Luar Biasa! Anda menjawab benar ${totalCorrect} dari ${totalQuestions} soal (${accuracy}%). Pertahankan prestasi ini!`;
+                    reflectionMsg.className = "text-xs text-emerald-300 font-semibold bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30";
+                } else if (accuracy >= 60) {
+                    reflectionMsg.innerText = `👍 Cukup Baik! Anda menjawab benar ${totalCorrect} soal dan salah ${totalWrong} soal (${accuracy}%). Pelajari kembali soal berdanda merah di atas!`;
+                    reflectionMsg.className = "text-xs text-amber-300 font-semibold bg-amber-950/40 p-2.5 rounded-xl border border-amber-500/30";
+                } else {
+                    reflectionMsg.innerText = `⚠️ Perlu Latihan Lagi! Anda benar ${totalCorrect} dan salah ${totalWrong} (${accuracy}%). Evaluasi kembali soal-soal berwarna merah!`;
+                    reflectionMsg.className = "text-xs text-red-300 font-semibold bg-red-950/40 p-2.5 rounded-xl border border-red-500/30";
+                }
+            } else {
+                scoreDetailsBox.classList.add('hidden');
+                reflectionMsg.innerText = "Silakan cocokkan jawaban yang telah Anda tulis di buku dengan kunci jawaban di setiap nomor soal di atas.";
+                reflectionMsg.className = "text-xs text-emerald-300 font-semibold italic bg-emerald-950/30 p-2 rounded-lg border border-emerald-500/20";
+            }
+
+            document.getElementById('score-summary').classList.remove('hidden');
+            document.getElementById('score-summary').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function startTimer(seconds) {
+            const timerContainer = document.getElementById('header-timer');
+            const timerDisplay = document.getElementById('timer-display');
+            timerContainer.classList.remove('hidden');
+            timerContainer.classList.add('flex');
+
+            let timeLeft = seconds;
+            if (runTimerInterval) clearInterval(runTimerInterval);
+
+            runTimerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(runTimerInterval);
+                    timerDisplay.innerText = "00:00";
+                    submitAnswers();
+                    alert("Waktu Lomba Telah Habis!");
+                } else {
+                    timeLeft--;
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerDisplay.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function backToMenu() {
+            if (runTimerInterval) clearInterval(runTimerInterval);
+            document.getElementById('header-timer').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
