@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sandi Master Pramuka - Plain Text & Smooth Countdown</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-[100dvh] flex flex-col justify-between antialiased selection:bg-amber-500 selection:text-slate-950 overflow-hidden">
+
+    <!-- Header Navigation Sticky -->
+    <header class="border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md sticky top-0 z-50 px-3 py-2 sm:px-4 sm:py-2.5 shrink-0">
+        <div class="max-w-4xl mx-auto flex justify-between items-center gap-2">
+            <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="backToMenu()">
+                <div class="bg-gradient-to-br from-amber-400 to-amber-600 p-1.5 rounded-xl text-slate-950 font-black shadow-lg shadow-amber-500/20 shrink-0">
+                    <i data-lucide="key-round" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="font-black text-sm sm:text-base leading-tight tracking-wide flex items-center gap-1.5 truncate text-white">
+                        SANDI MASTER <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-bold shrink-0">TEXT MODE</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 truncate">GUDEP SEDIA, Kotak 2, Jam A=15.00 & Rumput</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Tombol Kamus Sandi Terpisah -->
+                <button onclick="openDictionary()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 transition flex items-center gap-1.5 text-xs font-semibold border border-slate-800 active:scale-95 shadow-sm">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span class="hidden sm:inline">Kamus Sandi</span>
+                </button>
+
+                <!-- Header Timer untuk Semua Mode -->
+                <div id="header-timer" class="hidden items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-xl shrink-0">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400 animate-pulse"></i>
+                    <span id="timer-display" class="font-mono font-black text-amber-400 text-xs">00:00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Dynamic Container -->
+    <main class="max-w-4xl mx-auto px-3 py-2.5 sm:px-4 sm:py-3 w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+
+        <!-- MENU UTAMA SCREEN -->
+        <div id="menu-screen" class="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4 overflow-y-auto custom-scroll pr-1">
+            <div class="text-center space-y-0.5 my-1">
+                <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest">
+                    Materi Sandi Juknis Lomba
+                </span>
+                <h2 class="text-lg sm:text-2xl font-black text-white tracking-tight mt-1">Pilih Mode Latihan Sandi</h2>
+                <p class="text-slate-400 max-w-md mx-auto text-[11px] sm:text-xs">Soal berupa Teks Biasa tanpa kotak-kotak berlebihan yang makan tempat.</p>
+            </div>
+
+            <!-- MODE KATA FRESH AI -->
+            <div class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-3 space-y-2.5 shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center font-bold shrink-0">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-xs sm:text-sm text-white">Mode Sandi Kata (Fresh AI)</h3>
+                            <p class="text-[9px] sm:text-[10px] text-slate-400">Menghasilkan kata acak buatan AI Gemini yang BARU</p>
+                        </div>
+                    </div>
+                    <span class="text-[8px] font-black bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">FRESH AI</span>
+                </div>
+
+                <!-- Pilihan Sandi untuk Mode AI -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    <button type="button" onclick="selectAISandi('gudep')" id="ai-sandi-gudep" class="ai-sandi-btn py-1.5 px-2 rounded-xl border border-amber-500/50 bg-amber-500 text-slate-950 font-black text-[10px] transition">GUDEP SEDIA</button>
+                    <button type="button" onclick="selectAISandi('kotak2')" id="ai-sandi-kotak2" class="ai-sandi-btn py-1.5 px-2 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-[10px] transition">KOTAK 2</button>
+                    <button type="button" onclick="selectAISandi('jam')" id="ai-sandi-jam" class="ai-sandi-btn py-1.5 px-2 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-[10px] transition">JAM 15.00</button>
+                    <button type="button" onclick="selectAISandi('rumput')" id="ai-sandi-rumput" class="ai-sandi-btn py-1.5 px-2 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-[10px] transition">RUMPUT</button>
+                </div>
+
+                <!-- Pilihan Panjang Kata -->
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button type="button" onclick="selectLength('pendek')" id="len-pendek" class="length-btn py-1.5 text-[10px] rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold transition">Pendek (3-5)</button>
+                    <button type="button" onclick="selectLength('sedang')" id="len-sedang" class="length-btn py-1.5 text-[10px] rounded-xl border border-amber-500/50 bg-amber-500 text-slate-950 font-bold transition">Sedang (6-9)</button>
+                    <button type="button" onclick="selectLength('panjang')" id="len-panjang" class="length-btn py-1.5 text-[10px] rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold transition">Panjang (10+)</button>
+                </div>
+
+                <!-- Timer Setting Detik untuk Mode AI Kata -->
+                <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">Timer Mode AI Kata:</label>
+                        <span id="ai-timer-val" class="text-[9px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">30 Detik</span>
+                    </div>
+                    <input type="range" id="ai-timer-range" min="5" max="90" step="5" value="30" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-1.5">
+                    <div class="flex justify-between text-[8px] text-slate-500 font-bold px-0.5">
+                        <span>5 Detik</span>
+                        <span>45 Detik</span>
+                        <span>90 Detik (1.5m)</span>
+                    </div>
+                </div>
+
+                <button onclick="startWordAIMode()" class="w-full py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-slate-950 font-black rounded-xl shadow-md transition flex items-center justify-center gap-1.5 text-xs">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Generate Kata Fresh AI & Mainkan
+                </button>
+            </div>
+
+            <!-- MODE BIASA SECTION (LATIHAN PER SANDI 10 HURUF) -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i> Latihan Per-Sandi (10 Huruf)
+                    </h3>
+                    <span id="single-timer-val" class="text-[9px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">Timer: 45 Detik</span>
+                </div>
+
+                <!-- Timer Setting Detik Latihan 10 Huruf -->
+                <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl space-y-1">
+                    <input type="range" id="single-timer-range" min="5" max="90" step="5" value="45" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-1.5">
+                    <div class="flex justify-between text-[8px] text-slate-500 font-bold px-0.5">
+                        <span>5 Detik</span>
+                        <span>45 Detik</span>
+                        <span>90 Detik (1.5m)</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <!-- Sandi GUDEP SEDIA -->
+                    <div onclick="startSingleMode('gudep')" class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 p-2 rounded-xl cursor-pointer transition active:scale-95 group shadow-lg flex flex-col justify-between">
+                        <div class="w-6 h-6 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center mb-1 group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="grid" class="w-3 h-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-[11px]">GUDEP SEDIA</h4>
+                            <p class="text-[8px] text-slate-400">10 Huruf Acak</p>
+                        </div>
+                    </div>
+
+                    <!-- Sandi Kotak 2 -->
+                    <div onclick="startSingleMode('kotak2')" class="bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 p-2 rounded-xl cursor-pointer transition active:scale-95 group shadow-lg flex flex-col justify-between">
+                        <div class="w-6 h-6 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center mb-1 group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="grid-3x3" class="w-3 h-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-[11px]">Sandi Kotak 2</h4>
+                            <p class="text-[8px] text-slate-400">10 Huruf Acak</p>
+                        </div>
+                    </div>
+
+                    <!-- Sandi Jam A=15.00 -->
+                    <div onclick="startSingleMode('jam')" class="bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 p-2 rounded-xl cursor-pointer transition active:scale-95 group shadow-lg flex flex-col justify-between">
+                        <div class="w-6 h-6 bg-blue-500/10 text-blue-400 rounded-lg flex items-center justify-center mb-1 group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-[11px]">Jam A=15.00</h4>
+                            <p class="text-[8px] text-slate-400">10 Huruf Acak</p>
+                        </div>
+                    </div>
+
+                    <!-- Sandi Rumput -->
+                    <div onclick="startSingleMode('rumput')" class="bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 p-2 rounded-xl cursor-pointer transition active:scale-95 group shadow-lg flex flex-col justify-between">
+                        <div class="w-6 h-6 bg-purple-500/10 text-purple-400 rounded-lg flex items-center justify-center mb-1 group-hover:scale-110 transition shrink-0">
+                            <i data-lucide="trees" class="w-3 h-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-white text-[11px]">Sandi Rumput</h4>
+                            <p class="text-[8px] text-slate-400">10 Huruf Acak</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE RUN SECTION -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/30 rounded-2xl p-3 shadow-xl space-y-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 bg-amber-500/20 text-amber-400 rounded-xl flex items-center justify-center font-bold shrink-0">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs sm:text-sm text-white">Mode RUN (Mixed All Sandi)</h3>
+                        <p class="text-[9px] text-slate-400">Semua jenis sandi diacak campur secara acak pada setiap nomor soal</p>
+                    </div>
+                </div>
+
+                <!-- Pengaturan Jumlah Soal & Timer Mode RUN Detik -->
+                <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800/80 space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">Jumlah Soal / Huruf Acak:</label>
+                        <span id="run-count-val" class="text-[9px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">20 Soal</span>
+                    </div>
+                    <input type="range" id="run-count-range" min="10" max="60" step="5" value="20" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-1.5">
+
+                    <div class="flex justify-between items-center pt-0.5">
+                        <label class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">Durasi Timer Lomba:</label>
+                        <span id="run-timer-val" class="text-[9px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">60 Detik (1m)</span>
+                    </div>
+                    <input type="range" id="run-timer-range" min="5" max="90" step="5" value="60" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-1.5">
+                    <div class="flex justify-between text-[8px] text-slate-500 font-bold px-0.5">
+                        <span>5 Detik</span>
+                        <span>45 Detik</span>
+                        <span>90 Detik (1.5m)</span>
+                    </div>
+                </div>
+
+                <button onclick="startRunMode()" class="w-full py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-slate-950 font-black rounded-xl shadow-lg transition flex items-center justify-center gap-1.5 text-xs">
+                    <i data-lucide="play" class="w-3.5 h-3.5"></i> Mulai Mode RUN Lomba
+                </button>
+            </div>
+        </div>
+
+        <!-- KAMUS SANDI TERPISAH PER MATERI -->
+        <div id="dictionary-screen" class="hidden flex-1 flex-col space-y-2.5 min-h-0 h-full overflow-hidden my-auto">
+            <div class="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-2xl border border-slate-800 shadow-xl shrink-0">
+                <div>
+                    <h2 class="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+                        <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-400"></i> Kamus Sandi Pramuka
+                    </h2>
+                    <p class="text-slate-400 text-[9px]">Pilih tab sandi di bawah untuk melihat rumus per materi.</p>
+                </div>
+                <button onclick="backToMenu()" class="p-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Tab Kamus Sandi Terpisah -->
+            <div class="grid grid-cols-4 gap-1 shrink-0 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchDictTab('gudep')" id="dict-tab-gudep" class="dict-tab-btn py-1 px-1 rounded-lg text-[9px] font-black transition text-slate-400 hover:text-white">GUDEP</button>
+                <button onclick="switchDictTab('kotak2')" id="dict-tab-kotak2" class="dict-tab-btn py-1 px-1 rounded-lg text-[9px] font-black transition text-slate-400 hover:text-white">KOTAK 2</button>
+                <button onclick="switchDictTab('jam')" id="dict-tab-jam" class="dict-tab-btn py-1 px-1 rounded-lg text-[9px] font-black transition text-slate-400 hover:text-white">JAM 15.00</button>
+                <button onclick="switchDictTab('rumput')" id="dict-tab-rumput" class="dict-tab-btn py-1 px-1 rounded-lg text-[9px] font-black transition text-slate-400 hover:text-white">RUMPUT</button>
+            </div>
+
+            <!-- Content Kamus Scrollable -->
+            <div id="dict-content-viewport" class="flex-1 overflow-y-auto custom-scroll p-0.5 pr-1 space-y-2 min-h-0">
+                <!-- Dynamic Content via JS -->
+            </div>
+
+            <button onclick="backToMenu()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold rounded-xl border border-slate-800 transition text-xs shrink-0">
+                Kembali ke Menu Utama
+            </button>
+        </div>
+
+        <!-- LAYAR QUIZ / SIMULASI SOAL -->
+        <div id="quiz-screen" class="hidden flex-1 flex-col min-h-0 h-full overflow-hidden space-y-2 relative">
+            
+            <!-- Banner Top Header -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-2 flex justify-between items-center gap-2 shrink-0 shadow-md">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span id="quiz-badge" class="text-[8px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 px-2 py-0.2 rounded-full border border-amber-500/30 shrink-0">MODE RUN</span>
+                        <span id="quiz-sub-badge" class="text-[8px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-2 py-0.2 rounded-full border border-emerald-500/30 shrink-0">TEKS PARAGRAF</span>
+                    </div>
+                    <h2 id="quiz-title" class="text-xs font-black text-white truncate mt-0.5">Simulasi Lomba Sandi</h2>
+                </div>
+
+                <button onclick="backToMenu()" class="text-[9px] font-bold text-slate-400 hover:text-white bg-slate-800 px-2 py-1 rounded-lg border border-slate-700 transition shrink-0">
+                    Menu Utama
+                </button>
+            </div>
+
+            <!-- OVERLAY COUNTDOWN ELEGAN MINIMALIS DENGAN ANIMASI TIMING HARMONIS (3 -> 2 -> 1 -> MULAI) -->
+            <div id="countdown-overlay" class="absolute inset-0 bg-slate-950/98 z-50 flex items-center justify-center text-center p-4 backdrop-blur-2xl rounded-2xl overflow-hidden">
+                <div id="countdown-number" class="text-7xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 font-mono tracking-tighter drop-shadow-[0_0_40px_rgba(245,158,11,0.6)]">
+                    3
+                </div>
+            </div>
+
+            <!-- AI Generating Loading State -->
+            <div id="ai-loading" class="hidden flex-1 flex-col items-center justify-center bg-slate-900/90 border border-amber-500/30 p-4 rounded-2xl text-center space-y-1.5">
+                <div class="w-7 h-7 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p class="text-amber-400 font-black text-xs tracking-wide">MENGHUBUNGI AI GEMINI...</p>
+                <p class="text-slate-300 text-[10px]">Sedang membuat kata fresh baru...</p>
+            </div>
+
+            <!-- AREA CONTAINER SOAL TEKS BERSIH BERSAMBUNG (SAMA SEKALI TANPA CARD KOTAK TERPISAH) -->
+            <div id="questions-viewport" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-3 min-h-0 bg-slate-900 border border-slate-800 rounded-2xl shadow-inner">
+                <!-- Plain Text List Items Rendered Here -->
+            </div>
+
+            <!-- Result Box Summary -->
+            <div id="score-summary" class="hidden bg-slate-900 border border-amber-500/40 rounded-xl p-2.5 text-center space-y-0.5 shrink-0">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">KUNCI JAWABAN TERJEMAHAN TELAH DIBUKA</span>
+                <p class="text-[10px] text-amber-300 font-semibold">Silakan cocokkan terjemahan kata/huruf di bawah nomor soal dengan tulisan di buku Anda.</p>
+            </div>
+
+            <!-- ACTION FOOTER BAR (UNLOCK JAWABAN) -->
+            <div id="quiz-actions" class="shrink-0 flex flex-col gap-1 pt-0.5">
+                <button id="btn-submit" onclick="submitAnswers()" class="w-full py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-slate-950 font-black rounded-xl shadow-lg transition flex items-center justify-center gap-1.5 text-xs">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> Buka Kunci Jawaban & Terjemahan
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-1.5 text-center text-[9px] text-slate-500 border-t border-slate-900 shrink-0">
+        Sandi Master Pramuka &copy; 2026
+    </footer>
+
+    <!-- JavaScript Engine -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+
+        // Gemini API Config
+        const apiKey = "";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        // Bank Kata Offline Fallback
+        const fallbackWordBank = {
+            pendek: ["PRAMUKA", "SIAGA", "TUNAS", "KELAPA", "PANDU", "SANTI", "BETA", "ALFA", "KOMPAS", "GARUDA", "PATRIOT", "CERDAS"],
+            sedang: ["SATIYA DHARMA", "ISYARAT SANDI", "DASADHARMA", "JABAT TANGAN", "TALI TEMALI", "PEMIMPIN REGU", "SALAM PRAMUKA"],
+            panjang: ["PRAMUKA PEREKAT NKRI", "SATIYAKU KUDHARMAKAN DHARMAKU KUBAKTIKAN", "PRAMUKA GARUDA INDONESIA"]
+        };
+
+        // KODE MORSE RESMI
+        const morseCodeMap = {
+            'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
+            'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
+            'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
+            'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+            'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',  'Z': '--..'
+        };
+
+        /* RUMUS SANDI GUDEP SEDIA KOORDINAT (A-Z)
+           Baris (Atas) : G U D E P
+           Kolom (Kiri) : S E T I A
+        */
+        const gudepCoordMap = {
+            'A': 'GS', 'B': 'US', 'C': 'DS', 'D': 'ES', 'E': 'PS',
+            'F': 'GE', 'G': 'UE', 'H': 'DE', 'I': 'EE', 'J': 'PE',
+            'K': 'GT', 'L': 'UT', 'M': 'DT', 'N': 'ET', 'O': 'PT',
+            'P': 'GI', 'Q': 'UI', 'R': 'DI', 'S': 'EI', 'T': 'PI',
+            'U': 'GA', 'V': 'UA', 'W': 'DA', 'X': 'EA', 'Y': 'PA',
+            'Z': 'PE'
+        };
+
+        // RUMUS KOTAK 2
+        const kotak2Map = {
+            'A': { box: 1, pos: 1, dot: 0 }, 'B': { box: 1, pos: 1, dot: 1 }, 'C': { box: 1, pos: 1, dot: 2 },
+            'D': { box: 1, pos: 2, dot: 0 }, 'E': { box: 1, pos: 2, dot: 1 }, 'F': { box: 1, pos: 2, dot: 2 },
+            'G': { box: 1, pos: 3, dot: 0 }, 'H': { box: 1, pos: 3, dot: 1 }, 'I': { box: 1, pos: 3, dot: 2 },
+            'J': { box: 2, pos: 1, dot: 0 }, 'K': { box: 2, pos: 1, dot: 1 }, 'L': { box: 2, pos: 1, dot: 2 },
+            'M': { box: 2, pos: 2, dot: 0 }, 'N': { box: 2, pos: 2, dot: 1 }, 'O': { box: 2, pos: 2, dot: 2 },
+            'P': { box: 2, pos: 3, dot: 0 }, 'Q': { box: 2, pos: 3, dot: 1 }, 'R': { box: 2, pos: 3, dot: 2 },
+            'S': { box: 3, pos: 1, dot: 0 }, 'T': { box: 3, pos: 1, dot: 1 }, 'U': { box: 3, pos: 1, dot: 2 },
+            'V': { box: 3, pos: 2, dot: 0 }, 'W': { box: 3, pos: 2, dot: 1 }, 'X': { box: 3, pos: 2, dot: 2 },
+            'Y': { box: 3, pos: 3, dot: 0 }, 'Z': { box: 3, pos: 3, dot: 1 }
+        };
+
+        // App State
+        let currentMode = 'RUN'; 
+        let selectedAISandi = 'gudep';
+        let selectedLength = 'sedang';
+        let activeQuestionsList = []; // [{ type: 'gudep', text: 'PANDU' }, ...]
+        let runTimerInterval = null;
+        let selectedRunMinutes = 60; // detik
+        let selectedRunCount = 20;
+        let selectedAITimerSeconds = 30; // detik
+        let selectedSingleTimerSeconds = 45; // detik
+
+        // Sliders Listeners
+        document.getElementById('run-timer-range').addEventListener('input', (e) => {
+            selectedRunMinutes = parseInt(e.target.value);
+            document.getElementById('run-timer-val').innerText = formatSecondsText(selectedRunMinutes);
+        });
+
+        document.getElementById('run-count-range').addEventListener('input', (e) => {
+            selectedRunCount = parseInt(e.target.value);
+            document.getElementById('run-count-val').innerText = `${selectedRunCount} Soal`;
+        });
+
+        document.getElementById('ai-timer-range').addEventListener('input', (e) => {
+            selectedAITimerSeconds = parseInt(e.target.value);
+            document.getElementById('ai-timer-val').innerText = formatSecondsText(selectedAITimerSeconds);
+        });
+
+        document.getElementById('single-timer-range').addEventListener('input', (e) => {
+            selectedSingleTimerSeconds = parseInt(e.target.value);
+            document.getElementById('single-timer-val').innerText = `Timer: ${formatSecondsText(selectedSingleTimerSeconds)}`;
+        });
+
+        function formatSecondsText(sec) {
+            if (sec >= 60) {
+                let m = Math.floor(sec / 60);
+                let s = sec % 60;
+                return s > 0 ? `${m}m ${s}s` : `${m}.0m (${sec}s)`;
+            }
+            return `${sec} Detik`;
+        }
+
+        function selectAISandi(sandiKey) {
+            selectedAISandi = sandiKey;
+            document.querySelectorAll('.ai-sandi-btn').forEach(btn => {
+                btn.className = "ai-sandi-btn py-1.5 px-2 rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold text-[10px] transition";
+            });
+            const activeBtn = document.getElementById(`ai-sandi-${sandiKey}`);
+            if (activeBtn) {
+                activeBtn.className = "ai-sandi-btn py-1.5 px-2 rounded-xl border border-amber-500/50 bg-amber-500 text-slate-950 font-black text-[10px] transition shadow-md";
+            }
+        }
+
+        function selectLength(len) {
+            selectedLength = len;
+            document.querySelectorAll('.length-btn').forEach(btn => {
+                btn.className = "length-btn py-1.5 text-[10px] rounded-xl border border-slate-800 bg-slate-800 text-slate-300 font-bold transition";
+            });
+            const activeBtn = document.getElementById(`len-${len}`);
+            if (activeBtn) {
+                activeBtn.className = "length-btn py-1.5 text-[10px] rounded-xl border border-amber-500/50 bg-amber-500 text-slate-950 font-bold transition shadow-md";
+            }
+        }
+
+        function getRandomChar() {
+            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return alpha.charAt(Math.floor(Math.random() * alpha.length));
+        }
+
+        function generateRandomCharsString(count) {
+            let res = "";
+            for (let i = 0; i < count; i++) res += getRandomChar();
+            return res;
+        }
+
+        // COUNTDOWN 3 -> 2 -> 1 -> MULAI ENGINE SANGAT SINKRON
+        function triggerCountdown(onFinish) {
+            const overlay = document.getElementById('countdown-overlay');
+            const numEl = document.getElementById('countdown-number');
+            
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            let count = 3;
+            numEl.innerText = count;
+
+            const cdInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    numEl.innerText = count;
+                } else if (count === 0) {
+                    numEl.innerText = "MULAI!";
+                } else {
+                    clearInterval(cdInterval);
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('flex');
+                    if (onFinish) onFinish();
+                }
+            }, 800);
+        }
+
+        // Fetch Fresh AI Word
+        async function fetchAIWord(lengthType) {
+            const seed = Date.now() + Math.random().toString(36).substring(2, 7);
+            const promptMap = {
+                pendek: `Berikan 1 kata acak unik bahasa Indonesia atau istilah Pramuka dengan panjang 3 sampai 5 huruf. Kata harus fresh (seed: ${seed}). Hanya keluarkan kata murni A-Z tanpa spasi.`,
+                sedang: `Berikan 1 kata acak unik bahasa Indonesia atau istilah Pramuka dengan panjang 6 sampai 9 huruf. Kata harus fresh (seed: ${seed}). Hanya keluarkan kata murni A-Z tanpa spasi.`,
+                panjang: `Berikan 1 kata atau frasa slogan acak unik bahasa Indonesia atau Pramuka dengan panjang minimal 10 huruf. Kata harus fresh (seed: ${seed}). Hanya keluarkan kata murni A-Z tanpa spasi.`
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: promptMap[lengthType] }] }],
+                systemInstruction: { parts: [{ text: "Keluarkan TEKS KAPITAL MURNI HANYA HURUF A-Z tanpa angka, tanpa spasi, tanpa karakter khusus." }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 3; i++) {
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    let txt = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase();
+                    if (txt) return txt.replace(/[^A-Z]/g, '');
+                } catch (e) {
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+
+            const list = fallbackWordBank[lengthType];
+            return list[Math.floor(Math.random() * list.length)].replace(/[^A-Z]/g, '');
+        }
+
+        // START MODE KATA FRESH AI (DENGAN TIMER DETIK)
+        async function startWordAIMode() {
+            currentMode = 'wordAI';
+
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-loading').classList.add('flex');
+            document.getElementById('header-timer').classList.add('hidden');
+            document.getElementById('score-summary').classList.add('hidden');
+
+            const word = await fetchAIWord(selectedLength);
+            activeQuestionsList = [{ type: selectedAISandi, text: word }];
+
+            document.getElementById('ai-loading').classList.add('hidden');
+            document.getElementById('ai-loading').classList.remove('flex');
+
+            document.getElementById('quiz-title').innerText = `Sandi Kata Fresh AI (${selectedAISandi.toUpperCase()})`;
+            document.getElementById('quiz-badge').innerText = "FRESH AI KATA";
+            document.getElementById('quiz-sub-badge').innerText = `${word.length} HURUF`;
+
+            triggerCountdown(() => {
+                renderPlainQuestionsList();
+                startTimer(selectedAITimerSeconds);
+            });
+        }
+
+        // START MODE BIASA (PER SANDI 10 HURUF ACAK)
+        function startSingleMode(sandiKey) {
+            currentMode = sandiKey;
+
+            const modeTitles = {
+                gudep: "Soal Sandi GUDEP SEDIA (10 Huruf)",
+                kotak2: "Soal Sandi Kotak 2 (10 Huruf)",
+                jam: "Soal Sandi Jam A=15.00 (10 Huruf)",
+                rumput: "Soal Sandi Rumput (10 Huruf)"
+            };
+
+            const randomStr = generateRandomCharsString(10);
+            activeQuestionsList = [{ type: sandiKey, text: randomStr }];
+
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+
+            document.getElementById('quiz-title').innerText = modeTitles[sandiKey];
+            document.getElementById('quiz-badge').innerText = `LATIHAN ${sandiKey.toUpperCase()}`;
+            document.getElementById('quiz-sub-badge').innerText = "10 HURUF ACAK";
+            document.getElementById('score-summary').classList.add('hidden');
+
+            triggerCountdown(() => {
+                renderPlainQuestionsList();
+                startTimer(selectedSingleTimerSeconds);
+            });
+        }
+
+        // START MODE RUN (CAMPUR ACAK ALL SANDI)
+        function startRunMode() {
+            currentMode = 'RUN';
+
+            const sandiTypes = ['gudep', 'kotak2', 'jam', 'rumput'];
+            activeQuestionsList = [];
+
+            for (let i = 0; i < selectedRunCount; i++) {
+                let randomType = sandiTypes[Math.floor(Math.random() * sandiTypes.length)];
+                activeQuestionsList.push({
+                    type: randomType,
+                    text: getRandomChar()
+                });
+            }
+
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+
+            document.getElementById('quiz-title').innerText = `Simulasi RUN Mixed (${selectedRunCount} Soal)`;
+            document.getElementById('quiz-badge').innerText = "MODE RUN CAMPUR";
+            document.getElementById('quiz-sub-badge').innerText = `${selectedRunCount} SOAL MIXED`;
+            document.getElementById('score-summary').classList.add('hidden');
+
+            triggerCountdown(() => {
+                renderPlainQuestionsList();
+                startTimer(selectedRunMinutes);
+            });
+        }
+
+        // RENDER DAFTAR SOAL TEKS MURNI BERSIH BERDERET (SEPERTI LEMBARAN SOAL ASLI)
+        function renderPlainQuestionsList() {
+            const viewport = document.getElementById('questions-viewport');
+            viewport.innerHTML = '';
+
+            let sandiBadgeName = {
+                gudep: { text: "GUDEP SEDIA (KOORDINAT)", color: "text-amber-400" },
+                kotak2: { text: "KOTAK 2", color: "text-emerald-400" },
+                jam: { text: "JAM 15.00", color: "text-blue-400" },
+                rumput: { text: "RUMPUT", color: "text-purple-400" }
+            };
+
+            activeQuestionsList.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = "py-2 px-1 border-b border-slate-800/80 last:border-none space-y-1";
+
+                let encodedVisualHTML = renderEncodedTextOrSVG(item.type, item.text);
+                let badgeInfo = sandiBadgeName[item.type] || sandiBadgeName.gudep;
+
+                row.innerHTML = `
+                    <!-- Label Nomor & Nama Sandi -->
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="font-extrabold text-slate-300 font-mono">#${index + 1}.</span>
+                        <span class="font-black text-[10px] uppercase tracking-wider ${badgeInfo.color}">${badgeInfo.text}</span>
+                    </div>
+
+                    <!-- Tampilan Soal Sandi Menyatu Tanpa Box Card -->
+                    <div class="py-1 px-1 flex items-center justify-start overflow-x-hidden">
+                        ${encodedVisualHTML}
+                    </div>
+
+                    <!-- Kunci Jawaban Terjemahan Tepat Di Bawah Soal -->
+                    <div id="ans-box-${index}" class="hidden p-2 bg-emerald-950/70 border border-emerald-500/50 rounded-xl space-y-0.5 mt-1">
+                        <span class="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">KUNCI TERJEMAHAN:</span>
+                        <div class="font-mono font-black text-base text-white tracking-widest select-all">${item.text}</div>
+                    </div>
+                `;
+
+                viewport.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        // ENKREPSI TEKS LENGKAP ATAU SVG MULTI CHAR BERDERET ADAPTIF
+        function renderEncodedTextOrSVG(sandiType, text) {
+            const chars = text.split('');
+
+            if (sandiType === 'gudep') {
+                // GUDEP SEDIA KOORDINAT (GI, GS, ET, ES, GA...)
+                let coords = chars.map(c => gudepCoordMap[c] || c).join(', ');
+                return `<span class="font-mono font-black text-lg sm:text-xl text-amber-400 tracking-wider">${coords}</span>`;
+            } else if (sandiType === 'jam') {
+                // JAM 15.00
+                let times = chars.map(c => encodeSandiJam(c)).join(' - ');
+                return `<span class="font-mono font-black text-xs sm:text-sm text-blue-400 tracking-wider">${times}</span>`;
+            } else if (sandiType === 'rumput') {
+                // RUMPUT SVG BERDERET ADAPTIF TANPA SCROLLBAR
+                return `
+                    <div class="flex items-center gap-1.5 w-full overflow-hidden">
+                        ${chars.map(c => `
+                            <svg viewBox="0 0 100 40" class="w-12 h-6 sm:w-16 sm:h-8 shrink-0">
+                                ${renderRumputSVGPath(c)}
+                            </svg>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (sandiType === 'kotak2') {
+                // KOTAK 2 SVG BERDERET
+                return `
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        ${chars.map(c => `
+                            <svg viewBox="0 0 50 50" class="w-7 h-7 sm:w-8 sm:h-8 shrink-0">
+                                ${renderKotak2SVGPath(c)}
+                            </svg>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        // ENKREPSI SANDI JAM (A = 15.00)
+        function encodeSandiJam(char) {
+            let idx = char.charCodeAt(0) - 65;
+            if (idx < 0 || idx > 25) return "00.00";
+
+            let totalMinutes = (15 * 60) + (idx * 5);
+            let h = Math.floor(totalMinutes / 60) % 24;
+            let m = totalMinutes % 60;
+            return `${String(h).padStart(2, '0')}.${String(m).padStart(2, '0')}`;
+        }
+
+        // RENDER RUMPUT SVG
+        function renderRumputSVGPath(char) {
+            let morse = morseCodeMap[char] || '';
+            let pathD = "M 0 35 L 5 35 ";
+            let curX = 5;
+
+            for (let symbol of morse) {
+                if (symbol === '.') {
+                    pathD += `L ${curX + 5} 20 L ${curX + 10} 35 `;
+                    curX += 10;
+                } else if (symbol === '-') {
+                    pathD += `L ${curX + 8} 5 L ${curX + 16} 35 `;
+                    curX += 16;
+                }
+            }
+            pathD += `L 100 35`;
+
+            return `<path d="${pathD}" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+        }
+
+        // RENDER KOTAK 2 SVG
+        function renderKotak2SVGPath(char) {
+            let info = kotak2Map[char];
+            if (!info) return '';
+
+            let shapes = {
+                1: "M 40 10 L 10 10 L 10 40",
+                2: "M 10 10 L 40 10 L 40 40 L 10 40",
+                3: "M 10 10 L 40 10 L 40 40",
+            };
+
+            let pathLines = shapes[info.pos] || shapes[1];
+            let dots = '';
+
+            if (info.dot === 1) {
+                dots = `<circle cx="25" cy="25" r="3" fill="#fbbf24"/>`;
+            } else if (info.dot === 2) {
+                dots = `<circle cx="18" cy="25" r="3" fill="#fbbf24"/><circle cx="32" cy="25" r="3" fill="#fbbf24"/>`;
+            }
+
+            return `
+                <path d="${pathLines}" fill="none" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+                ${dots}
+            `;
+        }
+
+        // BUKA KUNCI JAWABAN (OTOMATIS DI-TRIGGER ATAU OLEH TOMBOL)
+        function submitAnswers() {
+            if (runTimerInterval) clearInterval(runTimerInterval);
+
+            activeQuestionsList.forEach((_, index) => {
+                const box = document.getElementById(`ans-box-${index}`);
+                if (box) box.classList.remove('hidden');
+            });
+
+            document.getElementById('score-summary').classList.remove('hidden');
+            document.getElementById('score-summary').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // TIMER HANDLER (DENGAN AUTO-SUBMIT JIKA WAKTU HABIS)
+        function startTimer(seconds) {
+            const timerContainer = document.getElementById('header-timer');
+            const timerDisplay = document.getElementById('timer-display');
+            timerContainer.classList.remove('hidden');
+            timerContainer.classList.add('flex');
+
+            let timeLeft = seconds;
+            if (runTimerInterval) clearInterval(runTimerInterval);
+
+            runTimerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(runTimerInterval);
+                    timerDisplay.innerText = "00:00";
+                    submitAnswers();
+                    alert("Waktu Lomba Telah Habis! Kunci jawaban otomatis dibuka.");
+                } else {
+                    timeLeft--;
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerDisplay.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // KAMUS SANDI ENGINE (SESUAI GAMBAR JUKNIS KOORDINAT)
+        function openDictionary() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.remove('hidden');
+            document.getElementById('dictionary-screen').classList.add('flex');
+
+            switchDictTab('gudep');
+        }
+
+        function switchDictTab(sandiKey) {
+            ['gudep', 'kotak2', 'jam', 'rumput'].forEach(k => {
+                const btn = document.getElementById(`dict-tab-${k}`);
+                if (btn) {
+                    if (k === sandiKey) {
+                        btn.className = "dict-tab-btn py-1.5 px-1 rounded-lg text-[10px] font-black transition bg-amber-500 text-slate-950 shadow-md";
+                    } else {
+                        btn.className = "dict-tab-btn py-1.5 px-1 rounded-lg text-[10px] font-black transition text-slate-400 hover:text-white bg-slate-900";
+                    }
+                }
+            });
+
+            const viewport = document.getElementById('dict-content-viewport');
+            viewport.innerHTML = '';
+            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+            if (sandiKey === 'gudep') {
+                viewport.innerHTML = `
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-3">
+                        <span class="font-extrabold text-amber-400 block">MATRIKS KOORDINAT GUDEP SEDIA:</span>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-center border-collapse border border-slate-700 font-mono text-xs">
+                                <thead>
+                                    <tr class="bg-slate-950 text-amber-400 font-black">
+                                        <th class="border border-slate-700 p-1.5 bg-slate-900">⬛</th>
+                                        <th class="border border-slate-700 p-1.5">G</th>
+                                        <th class="border border-slate-700 p-1.5">U</th>
+                                        <th class="border border-slate-700 p-1.5">D</th>
+                                        <th class="border border-slate-700 p-1.5">E</th>
+                                        <th class="border border-slate-700 p-1.5">P</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border border-slate-700 p-1.5 font-bold text-amber-400 bg-slate-950">S</td>
+                                        <td class="border border-slate-700 p-1.5">A</td>
+                                        <td class="border border-slate-700 p-1.5">B</td>
+                                        <td class="border border-slate-700 p-1.5">C</td>
+                                        <td class="border border-slate-700 p-1.5">D</td>
+                                        <td class="border border-slate-700 p-1.5">E</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-slate-700 p-1.5 font-bold text-amber-400 bg-slate-950">E</td>
+                                        <td class="border border-slate-700 p-1.5">F</td>
+                                        <td class="border border-slate-700 p-1.5">G</td>
+                                        <td class="border border-slate-700 p-1.5">H</td>
+                                        <td class="border border-slate-700 p-1.5">I</td>
+                                        <td class="border border-slate-700 p-1.5">J</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-slate-700 p-1.5 font-bold text-amber-400 bg-slate-950">T</td>
+                                        <td class="border border-slate-700 p-1.5">K</td>
+                                        <td class="border border-slate-700 p-1.5">L</td>
+                                        <td class="border border-slate-700 p-1.5">M</td>
+                                        <td class="border border-slate-700 p-1.5">N</td>
+                                        <td class="border border-slate-700 p-1.5">O</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-slate-700 p-1.5 font-bold text-amber-400 bg-slate-950">I</td>
+                                        <td class="border border-slate-700 p-1.5">P</td>
+                                        <td class="border border-slate-700 p-1.5">Q</td>
+                                        <td class="border border-slate-700 p-1.5">R</td>
+                                        <td class="border border-slate-700 p-1.5">S</td>
+                                        <td class="border border-slate-700 p-1.5">T</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-slate-700 p-1.5 font-bold text-amber-400 bg-slate-950">A</td>
+                                        <td class="border border-slate-700 p-1.5">U</td>
+                                        <td class="border border-slate-700 p-1.5">V</td>
+                                        <td class="border border-slate-700 p-1.5">W</td>
+                                        <td class="border border-slate-700 p-1.5">X</td>
+                                        <td class="border border-slate-700 p-1.5">Y</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 mt-2">Contoh: PANDU = GI GS ET ES GA</p>
+                    </div>
+                `;
+            } else if (sandiKey === 'jam') {
+                viewport.innerHTML = `
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+                        <span class="font-extrabold text-blue-400 block">RUMUS SANDI JAM (A = 15.00, Beda 5 Menit):</span>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 font-mono text-slate-200">
+                            ${alpha.split('').map(c => `
+                                <div class="bg-slate-950 p-1.5 rounded border border-slate-800 text-center">
+                                    <b class="text-amber-400">${c}</b> = ${encodeSandiJam(c)}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (sandiKey === 'rumput') {
+                viewport.innerHTML = `
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+                        <span class="font-extrabold text-purple-400 block">KAMUS SANDI RUMPUT (GRAFIK MORSE):</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            ${alpha.split('').map(c => `
+                                <div class="bg-slate-950 p-2 rounded border border-slate-800 flex items-center justify-between">
+                                    <span class="font-bold text-amber-400 text-sm">${c}</span>
+                                    <svg viewBox="0 0 100 40" class="w-12 h-8">
+                                        ${renderRumputSVGPath(c)}
+                                    </svg>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (sandiKey === 'kotak2') {
+                viewport.innerHTML = `
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+                        <span class="font-extrabold text-emerald-400 block">KAMUS SANDI KOTAK 2 (3 HURUF PER BENTUK):</span>
+                        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                            ${alpha.split('').map(c => `
+                                <div class="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center">
+                                    <span class="font-bold text-amber-400 text-xs mb-1">${c}</span>
+                                    <svg viewBox="0 0 50 50" class="w-8 h-8">
+                                        ${renderKotak2SVGPath(c)}
+                                    </svg>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function backToMenu() {
+            if (runTimerInterval) clearInterval(runTimerInterval);
+            document.getElementById('header-timer').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
