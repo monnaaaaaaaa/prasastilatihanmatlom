@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pramuka Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-6">
+
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Akses Pramuka</h2>
+            <p class="text-slate-500 mb-6 text-sm">Masukkan password untuk melanjutkan.</p>
+            
+            <div class="space-y-4">
+                <input type="password" id="password" placeholder="Password" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="checkAccess()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Masuk</button>
+            </div>
+            <p id="errorMsg" class="text-red-500 text-xs mt-4 hidden">Password salah!</p>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden w-full max-w-4xl text-center">
+        <header class="mb-12">
+            <h1 class="text-4xl font-bold text-white mb-2">Pramuka Hub</h1>
+            <p class="text-slate-400">Pilih modul materi di bawah ini:</p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <a href="semapur.html" class="bg-white p-8 rounded-2xl shadow-sm hover:scale-105 transition-transform font-semibold text-lg">🚩 Semapur</a>
+            <a href="sandi.html" class="bg-white p-8 rounded-2xl shadow-sm hover:scale-105 transition-transform font-semibold text-lg">🔐 Sandi</a>
+            <a href="morse.html" class="bg-white p-8 rounded-2xl shadow-sm hover:scale-105 transition-transform font-semibold text-lg">📻 Morse</a>
+            <a href="pupk.html" class="bg-white p-8 rounded-2xl shadow-sm hover:scale-105 transition-transform font-semibold text-lg">📋 PUPK</a>
+            <a href="pionering.html" class="bg-white p-8 rounded-2xl shadow-sm hover:scale-105 transition-transform font-semibold text-lg">🏗️ Miniatur Pionering</a>
+        </main>
+    </div>
+
+    <script>
+        const ACCESS_KEY = "Pramasepta"; // Ganti dengan password pilihan Anda
+
+        function checkAccess() {
+            const pass = document.getElementById('password').value;
+
+            if (pass === ACCESS_KEY) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            } else {
+                document.getElementById('errorMsg').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
