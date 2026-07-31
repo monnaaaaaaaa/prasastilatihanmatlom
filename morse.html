@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Morse Master - Pengaturan Jeda Huruf & AI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            min-height: 100dvh;
+        }
+
+        /* Custom Lamp Glow Animation */
+        .lamp-glow {
+            box-shadow: 0 0 50px #f59e0b, 0 0 100px #f59e0b;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col justify-between antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-3 py-2.5 sm:px-4 sm:py-3 shrink-0">
+        <div class="max-w-4xl mx-auto flex justify-between items-center gap-2">
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="backToMenu()">
+                <div class="bg-gradient-to-br from-amber-400 to-amber-600 p-2 rounded-xl text-slate-950 font-black shadow-lg shadow-amber-500/20 shrink-0">
+                    <i data-lucide="radio" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="font-extrabold text-sm sm:text-lg leading-tight tracking-wide flex items-center gap-1.5 truncate text-white">
+                        <span class="truncate">MORSE MASTER</span>
+                        <span class="text-[9px] sm:text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-bold shrink-0">FRESH AI</span>
+                    </h1>
+                    <p class="text-[10px] sm:text-xs text-slate-400 truncate">Latihan Morse Audio Beep + Lampu Kedip</p>
+                </div>
+            </div>
+            
+            <!-- Actions & Counter -->
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Tombol Pengaturan Suara -->
+                <button onclick="openSoundSettings()" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 transition border border-slate-800 active:scale-95 shadow-sm" title="Pengaturan Suara">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Tombol Kamus A-Z -->
+                <button onclick="openDictionary()" class="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 transition flex items-center gap-1.5 text-xs font-semibold border border-slate-800 active:scale-95 shadow-sm">
+                    <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
+                    <span class="hidden sm:inline">Kamus Morse</span>
+                </button>
+
+                <!-- Counter SS (Selesai Soal) -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 flex items-center gap-2 shadow-inner">
+                    <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+                    <div class="text-left leading-none">
+                        <span class="text-slate-400 block text-[8px] sm:text-[9px] uppercase tracking-wider font-bold">Selesai</span>
+                        <span id="ss-counter" class="font-black text-amber-400 text-xs sm:text-sm">SS: 0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-3 py-4 sm:px-4 sm:py-6 w-full flex-1 flex flex-col justify-center">
+
+        <!-- MENU MODE UTAMA -->
+        <div id="menu-screen" class="space-y-4 sm:space-y-6">
+            <div class="text-center space-y-1 sm:space-y-2">
+                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Pilih Mode Permainan</h2>
+                <p class="text-slate-400 max-w-md mx-auto text-xs sm:text-sm">Atur durasi sinyal dan jeda antar huruf sesuai tingkat refleks Anda.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-2 sm:mt-6">
+                <!-- Card Mode Morse Kata (AI) -->
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 transition-all rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-3 sm:mb-4">
+                            <div class="w-11 h-11 sm:w-12 sm:h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center shrink-0 border border-amber-500/20">
+                                <i data-lucide="sparkles" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-black bg-amber-500/15 text-amber-400 px-2.5 py-1 rounded-xl border border-amber-500/30">Fresh AI Kata</span>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-extrabold mb-1.5 text-white">Morse Kata (AI)</h3>
+                        <p class="text-slate-400 text-xs sm:text-sm mb-4 leading-relaxed">
+                            Menebak kata acak buatan AI Gemini yang selalu <b>BARU & FRESH</b>. Mengeluarkan suara beep + lampu kedip.
+                        </p>
+                        
+                        <!-- Slider Kecepatan / Durasi Titik -->
+                        <div class="space-y-2 mb-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider">Durasi Nada Titik (.):</label>
+                                <span id="word-speed-val" class="text-[10px] sm:text-xs font-extrabold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">0.12 Detik</span>
+                            </div>
+                            <input type="range" id="word-speed-range" min="0.05" max="0.50" step="0.05" value="0.12" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                        <!-- Slider Jeda Antar Huruf -->
+                        <div class="space-y-2 mb-4 bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                                    <i data-lucide="timer-reset" class="w-3.5 h-3.5 text-amber-400"></i> Jeda Antar Huruf:
+                                </label>
+                                <span id="word-pause-val" class="text-[10px] sm:text-xs font-extrabold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">0.36 Detik</span>
+                            </div>
+                            <input type="range" id="word-pause-range" min="0.10" max="2.50" step="0.05" value="0.36" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                        <!-- Pilihan Panjang Kata -->
+                        <div class="space-y-2 mb-4 sm:mb-6">
+                            <label class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">Tingkat Panjang Kata:</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="selectLength('pendek')" id="len-pendek" class="length-btn py-2 text-xs rounded-xl border border-slate-800 bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-slate-950 font-bold transition active:scale-95">Pendek (3-5)</button>
+                                <button type="button" onclick="selectLength('sedang')" id="len-sedang" class="length-btn py-2 text-xs rounded-xl border border-amber-500/50 bg-amber-500 text-slate-950 font-bold transition active:scale-95 shadow-md shadow-amber-500/10">Sedang (6-9)</button>
+                                <button type="button" onclick="selectLength('panjang')" id="len-panjang" class="length-btn py-2 text-xs rounded-xl border border-slate-800 bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-slate-950 font-bold transition active:scale-95">Panjang (10+)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="startWordMode()" class="w-full py-3 sm:py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-slate-950 font-black rounded-2xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i> Generate Kata AI & Play
+                    </button>
+                </div>
+
+                <!-- Card Mode Morse Acak (10 Huruf) -->
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 transition-all rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-3 sm:mb-4">
+                            <div class="w-11 h-11 sm:w-12 sm:h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center shrink-0 border border-blue-500/20">
+                                <i data-lucide="shuffle" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-black bg-blue-500/15 text-blue-400 px-2.5 py-1 rounded-xl border border-blue-500/30">10 Huruf Random</span>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-extrabold mb-1.5 text-white">Morse Acak (10 Huruf)</h3>
+                        <p class="text-slate-400 text-xs sm:text-sm mb-4 leading-relaxed">
+                            Menampilkan <b>10 HURUF ACAK</b> berurutan. Mengeluarkan sinyal suara beep + lampu kedip visual secara bersamaan.
+                        </p>
+
+                        <!-- Slider Kecepatan / Durasi Titik -->
+                        <div class="space-y-2 mb-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider">Durasi Nada Titik (.):</label>
+                                <span id="random-speed-val" class="text-[10px] sm:text-xs font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-lg border border-blue-500/20">0.12 Detik</span>
+                            </div>
+                            <input type="range" id="random-speed-range" min="0.05" max="0.50" step="0.05" value="0.12" class="w-full accent-blue-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+
+                        <!-- Slider Jeda Antar Huruf -->
+                        <div class="space-y-2 mb-6 bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                                    <i data-lucide="timer-reset" class="w-3.5 h-3.5 text-blue-400"></i> Jeda Antar Huruf:
+                                </label>
+                                <span id="random-pause-val" class="text-[10px] sm:text-xs font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-lg border border-blue-500/20">0.36 Detik</span>
+                            </div>
+                            <input type="range" id="random-pause-range" min="0.10" max="2.50" step="0.05" value="0.36" class="w-full accent-blue-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                        </div>
+                    </div>
+
+                    <button onclick="startRandomMode()" class="w-full py-3 sm:py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 active:scale-[0.98] text-slate-950 font-black rounded-2xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <i data-lucide="play" class="w-4 h-4 sm:w-5 sm:h-5"></i> Mulai Morse Acak (10 Huruf)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KAMUS MORSE SCREEN -->
+        <div id="dictionary-screen" class="hidden flex-col space-y-4 my-auto">
+            <div class="flex justify-between items-center bg-slate-900 px-4 py-3.5 rounded-2xl border border-slate-800 shadow-xl">
+                <div>
+                    <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i> Kamus Kode Morse (A–Z & 0–9)
+                    </h2>
+                    <p class="text-slate-400 text-xs">Klik tombol audio untuk mendengarkan sinyal nada Morse.</p>
+                </div>
+                <button onclick="backToMenu()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Grid Kartu Kode Morse A-Z -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3 max-h-[58vh] overflow-y-auto p-1 custom-scroll" id="dictionary-grid">
+                <!-- Diisi JavaScript -->
+            </div>
+
+            <button onclick="backToMenu()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold rounded-2xl border border-slate-800 transition text-xs sm:text-sm">
+                Kembali ke Menu Utama
+            </button>
+        </div>
+
+        <!-- LAYAR PERMAINAN (GAMEPLAY) -->
+        <div id="game-screen" class="hidden flex-col items-center justify-center space-y-4 sm:space-y-6 my-auto">
+            
+            <!-- COUNTER INDIKATOR BESAR & TERPISAH -->
+            <div class="w-full max-w-xs sm:max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl flex items-center justify-between gap-2">
+                <div class="flex flex-col">
+                    <span id="game-mode-title" class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-400 truncate max-w-[150px]">Morse Kata AI</span>
+                    <span class="text-[10px] text-slate-400 font-semibold">Progres Isyarat</span>
+                </div>
+                
+                <!-- INDIKATOR URUTAN SANGAT BESAR -->
+                <div class="flex items-center gap-1.5 bg-slate-950 px-3.5 py-1.5 rounded-xl border border-slate-800/80 shadow-inner">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">HURUF</span>
+                    <span id="current-char-idx" class="text-xl sm:text-2xl font-black text-amber-400 font-mono">01</span>
+                    <span class="text-slate-500 font-bold text-sm">/</span>
+                    <span id="total-char-cnt" class="text-sm sm:text-base font-extrabold text-slate-300 font-mono">10</span>
+                </div>
+            </div>
+
+            <!-- Display Lampu Kedip Visual + Audio -->
+            <div class="relative w-[70vw] max-w-[260px] h-[70vw] max-h-[260px] bg-slate-950 rounded-3xl border-2 border-slate-800 flex flex-col items-center justify-center shadow-2xl overflow-hidden shrink-0">
+                
+                <!-- Lamp Bulb Visual -->
+                <div id="lamp-bulb" class="w-24 h-24 rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center transition-all duration-75">
+                    <i id="lamp-icon" data-lucide="lightbulb" class="w-12 h-12 text-slate-700 transition-all"></i>
+                </div>
+
+                <!-- Live Signal Symbol Text Display -->
+                <div id="morse-symbol-display" class="mt-4 font-mono font-black text-2xl tracking-widest text-amber-400 h-8">
+                    
+                </div>
+
+                <!-- Overlay Countdown & Status -->
+                <div id="game-overlay" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center text-center p-3 z-10 backdrop-blur-sm">
+                    <span id="overlay-text" class="text-2xl sm:text-3xl font-black text-amber-400 animate-pulse tracking-wide">MEMPROSES...</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full max-w-xs sm:max-w-sm bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800 p-0.5">
+                <div id="progress-bar" class="bg-amber-500 h-full rounded-full w-0 transition-all duration-75"></div>
+            </div>
+
+            <button onclick="stopGame()" class="px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 active:scale-95 text-red-400 border border-red-500/30 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center gap-2">
+                <i data-lucide="square" class="w-4 h-4"></i> Hentikan Latihan
+            </button>
+        </div>
+
+        <!-- LAYAR HASIL / KUNCI JAWABAN -->
+        <div id="result-screen" class="hidden flex-col items-center justify-center space-y-4 sm:space-y-6 text-center max-w-lg mx-auto w-full">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/20 shadow-xl shrink-0">
+                <i data-lucide="check-circle-2" class="w-8 h-8 sm:w-10 sm:h-10"></i>
+            </div>
+
+            <div>
+                <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Latihan Selesai!</h2>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1 px-2" id="result-sub">Berikut adalah kunci jawaban isyarat Morse yang baru saja dikirimkan:</p>
+            </div>
+
+            <!-- Kotak Kunci Jawaban -->
+            <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-2">
+                <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest block">KUNCI JAWABAN</span>
+                <p id="answer-text" class="text-2xl sm:text-3xl font-black text-amber-400 tracking-widest break-words leading-relaxed font-mono select-all">
+                    MORSE
+                </p>
+            </div>
+
+            <div class="flex gap-3 sm:gap-4 w-full">
+                <button onclick="replayGame()" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl border border-slate-800 transition text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 shadow-lg">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Ulangi
+                </button>
+                <button onclick="backToMenu()" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-amber-500/20">
+                    <i data-lucide="home" class="w-4 h-4"></i> Menu Utama
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL PENGATURAN SUARA MORSE -->
+    <div id="sound-settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-5 h-5 text-amber-400"></i> Pengaturan Varian Suara
+                </h3>
+                <button onclick="closeSoundSettings()" class="text-slate-400 hover:text-white p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2 text-xs text-slate-300">
+                <label class="font-bold text-slate-400 uppercase tracking-wider block text-[10px]">Pilih Jenis Waveform & Frequency:</label>
+                
+                <div class="space-y-2" id="sound-variants-list">
+                    <!-- Options di-render via JavaScript -->
+                </div>
+            </div>
+
+            <button onclick="closeSoundSettings()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs transition">
+                Simpan & Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-3 text-center text-[10px] sm:text-xs text-slate-500 border-t border-slate-900 shrink-0">
+        Aplikasi Belajar Morse Master AI &copy; 2026
+    </footer>
+
+    <!-- JavaScript Engine -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            renderSoundOptions();
+        });
+
+        // Gemini API Configuration
+        const apiKey = "";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        // Bank Kata Cadangan (Offline Fallback)
+        const fallbackWordBank = {
+            pendek: ["PRAMUKA", "SIAGA", "TUNAS", "KELAPA", "PANDU", "SANTI", "BETA", "ALFA", "KOMPAS", "GARUDA", "PATRIOT", "CERDAS"],
+            sedang: ["SATIYA DHARMA", "ISYARAT MORSE", "DASADHARMA", "JABAT TANGAN", "TALI TEMALI", "PEMIMPIN REGU", "SALAM PRAMUKA"],
+            panjang: ["PRAMUKA PEREKAT NKRI", "SATIYAKU KUDHARMAKAN DHARMAKU KUBAKTIKAN", "PRAMUKA GARUDA INDONESIA"]
+        };
+
+        // KODE MORSE RESMI (A-Z & 0-9)
+        const morseCodeMap = {
+            'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
+            'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
+            'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
+            'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+            'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
+            'Z': '--..',  '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+            '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+            '0': '-----', ' ': '/'
+        };
+
+        // VARIAN SUARA (AUDIO TONE SYNTHESIZER WAVES)
+        const soundVariants = {
+            'sine_750': { name: "Bait Sine (Standar Telegraf)", type: "sine", freq: 750, desc: "Nada murni telegraf klasik" },
+            'square_700': { name: "Radio Peluit (Square Wave)", type: "square", freq: 700, desc: "Sinyal radio militer kuno" },
+            'triangle_650': { name: "Sinyal Lembut (Triangle)", type: "triangle", freq: 650, desc: "Suara akustik lembut di telinga" },
+            'sawtooth_800': { name: "Laser Synth (Sawtooth)", type: "sawtooth", freq: 800, desc: "Nada tajam & nyaring" },
+            'sine_880': { name: "Pitch Tinggi (880 Hz)", type: "sine", freq: 880, desc: "Frekuensi A5 melengking" },
+            'sine_520': { name: "Pitch Rendah (520 Hz)", type: "sine", freq: 520, desc: "Nada bass tebal" }
+        };
+
+        // State Variable
+        let currentMode = 'word'; // 'word' (AI Kata) atau 'random' (10 Huruf Acak)
+        let selectedLength = 'sedang';
+        let selectedSoundKey = 'sine_750'; // Varian suara aktif
+        let dotDuration = 0.12; // detik per nada titik (.)
+        let charPauseDuration = 0.36; // detik jeda antar huruf (default 0.36 detik)
+        let currentSequence = [];
+        let currentIndex = 0;
+        let isRunningSequence = false;
+        let completedSSCount = 0;
+
+        // Web Audio API Context Engine
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playBeep(durationMs, soundKey = selectedSoundKey) {
+            return new Promise((resolve) => {
+                try {
+                    const ctx = getAudioContext();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    const soundCfg = soundVariants[soundKey] || soundVariants['sine_750'];
+
+                    osc.type = soundCfg.type;
+                    osc.frequency.value = soundCfg.freq;
+
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (durationMs / 1000));
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start();
+                    setTimeout(() => {
+                        osc.stop();
+                        resolve();
+                    }, durationMs);
+                } catch(e) {
+                    setTimeout(resolve, durationMs);
+                }
+            });
+        }
+
+        // Sliders Listeners - Sync Durasi Titik
+        document.getElementById('word-speed-range').addEventListener('input', (e) => {
+            dotDuration = parseFloat(e.target.value);
+            document.getElementById('word-speed-val').innerText = `${dotDuration.toFixed(2)} Detik`;
+            document.getElementById('random-speed-range').value = dotDuration;
+            document.getElementById('random-speed-val').innerText = `${dotDuration.toFixed(2)} Detik`;
+        });
+
+        document.getElementById('random-speed-range').addEventListener('input', (e) => {
+            dotDuration = parseFloat(e.target.value);
+            document.getElementById('random-speed-val').innerText = `${dotDuration.toFixed(2)} Detik`;
+            document.getElementById('word-speed-range').value = dotDuration;
+            document.getElementById('word-speed-val').innerText = `${dotDuration.toFixed(2)} Detik`;
+        });
+
+        // Sliders Listeners - Sync Jeda Antar Huruf
+        document.getElementById('word-pause-range').addEventListener('input', (e) => {
+            charPauseDuration = parseFloat(e.target.value);
+            document.getElementById('word-pause-val').innerText = `${charPauseDuration.toFixed(2)} Detik`;
+            document.getElementById('random-pause-range').value = charPauseDuration;
+            document.getElementById('random-pause-val').innerText = `${charPauseDuration.toFixed(2)} Detik`;
+        });
+
+        document.getElementById('random-pause-range').addEventListener('input', (e) => {
+            charPauseDuration = parseFloat(e.target.value);
+            document.getElementById('random-pause-val').innerText = `${charPauseDuration.toFixed(2)} Detik`;
+            document.getElementById('word-pause-range').value = charPauseDuration;
+            document.getElementById('word-pause-val').innerText = `${charPauseDuration.toFixed(2)} Detik`;
+        });
+
+        function selectLength(len) {
+            selectedLength = len;
+            document.querySelectorAll('.length-btn').forEach(btn => {
+                btn.className = "length-btn py-2 text-xs rounded-xl border border-slate-800 bg-slate-800 text-slate-200 hover:bg-amber-500 hover:text-slate-950 font-bold transition active:scale-95";
+            });
+            const activeBtn = document.getElementById(`len-${len}`);
+            if (activeBtn) {
+                activeBtn.className = "length-btn py-2 text-xs rounded-xl border border-amber-500/50 bg-amber-500 text-slate-950 font-bold transition active:scale-95 shadow-md shadow-amber-500/10";
+            }
+        }
+
+        // Modal Pengaturan Varian Suara
+        function openSoundSettings() {
+            document.getElementById('sound-settings-modal').classList.remove('hidden');
+            document.getElementById('sound-settings-modal').classList.add('flex');
+        }
+
+        function closeSoundSettings() {
+            document.getElementById('sound-settings-modal').classList.add('hidden');
+            document.getElementById('sound-settings-modal').classList.remove('flex');
+        }
+
+        function renderSoundOptions() {
+            const list = document.getElementById('sound-variants-list');
+            list.innerHTML = '';
+
+            Object.keys(soundVariants).forEach(key => {
+                const item = soundVariants[key];
+                const isSelected = key === selectedSoundKey;
+
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-500/10 border-amber-500/50 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700'}`;
+                card.onclick = () => selectSoundVariant(key);
+
+                card.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="font-bold text-xs text-white flex items-center gap-1.5">
+                            ${item.name}
+                            ${isSelected ? '<span class="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded font-black">AKTIF</span>' : ''}
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">${item.desc}</p>
+                    </div>
+                    <button onclick="event.stopPropagation(); testSoundVariant('${key}')" class="p-2 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition active:scale-95 shrink-0" title="Tes Suara">
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                list.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function selectSoundVariant(key) {
+            selectedSoundKey = key;
+            renderSoundOptions();
+            testSoundVariant(key);
+        }
+
+        async function testSoundVariant(key) {
+            await playBeep(100, key);
+            await sleep(80);
+            await playBeep(300, key);
+        }
+
+        // Fetch Fresh AI Word dari Gemini API
+        async function fetchAIWord(lengthType) {
+            const seed = Date.now() + Math.random().toString(36).substring(2, 7);
+            const promptMap = {
+                pendek: `Berikan 1 kata acak unik bahasa Indonesia atau istilah Pramuka dengan panjang 3 sampai 5 huruf. Kata harus fresh dan beda (seed: ${seed}). Hanya keluarkan kataya murni A-Z tanpa spasi.`,
+                sedang: `Berikan 1 kata acak unik bahasa Indonesia atau istilah Pramuka dengan panjang 6 sampai 9 huruf. Kata harus fresh dan beda (seed: ${seed}). Hanya keluarkan kataya murni A-Z tanpa spasi.`,
+                panjang: `Berikan 1 kata atau frasa slogan acak unik bahasa Indonesia atau Pramuka dengan panjang minimal 10 huruf. Kata harus fresh dan beda (seed: ${seed}). Hanya keluarkan teksnya murni A-Z tanpa spasi.`
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: promptMap[lengthType] }] }],
+                systemInstruction: { parts: [{ text: "Kamu adalah AI generator kata acak murni. Keluarkan TEKS KAPITAL MURNI HANYA HURUF A-Z tanpa angka, tanpa spasi, tanpa karakter khusus." }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 3; i++) {
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    let txt = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase();
+                    if (txt) return txt.replace(/[^A-Z]/g, '');
+                } catch (e) {
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+
+            const list = fallbackWordBank[lengthType];
+            return list[Math.floor(Math.random() * list.length)].replace(/[^A-Z]/g, '');
+        }
+
+        function getRandomLetters(count) {
+            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            let res = "";
+            for (let i = 0; i < count; i++) res += alpha.charAt(Math.floor(Math.random() * alpha.length));
+            return res;
+        }
+
+        // Mode Start Handler
+        async function startWordMode() {
+            currentMode = 'word';
+            initGameDisplay('Morse Kata (AI Fresh)', true);
+
+            const word = await fetchAIWord(selectedLength);
+            currentSequence = word.split('');
+            startCountdownAndRun();
+        }
+
+        function startRandomMode() {
+            currentMode = 'random';
+            initGameDisplay('Morse Acak (10 Huruf)', false);
+
+            currentSequence = getRandomLetters(10).split('');
+            startCountdownAndRun();
+        }
+
+        function initGameDisplay(title, isAILoading) {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('flex');
+
+            document.getElementById('game-mode-title').innerText = title;
+            document.getElementById('current-char-idx').innerText = "01";
+            document.getElementById('total-char-cnt').innerText = String(currentSequence.length || 10).padStart(2, '0');
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('morse-symbol-display').innerText = '';
+
+            const overlay = document.getElementById('game-overlay');
+            const overlayText = document.getElementById('overlay-text');
+            overlay.classList.remove('hidden');
+
+            if (isAILoading) {
+                overlayText.innerHTML = `<span class="text-base sm:text-lg block font-extrabold">MEMPROSES AI...</span><span class="text-[10px] sm:text-xs text-amber-300 font-normal">Mengacak kata baru</span>`;
+            } else {
+                overlayText.innerText = "SIAP...";
+            }
+        }
+
+        function startCountdownAndRun() {
+            const overlay = document.getElementById('game-overlay');
+            const overlayText = document.getElementById('overlay-text');
+            overlayText.innerText = "SIAP...";
+
+            let count = 3;
+            const timer = setInterval(() => {
+                if (count > 0) {
+                    overlayText.innerText = count;
+                    count--;
+                } else {
+                    clearInterval(timer);
+                    overlay.classList.add('hidden');
+                    runMorseSequence();
+                }
+            }, 600);
+        }
+
+        // Jalankan Urutan Sinyal Morse (Visual Kedip + Audio Beep + Custom Jeda Huruf)
+        async function runMorseSequence() {
+            isRunningSequence = true;
+            const dotTimeMs = dotDuration * 1000;
+            const dashTimeMs = dotTimeMs * 3;
+            const elementPauseMs = dotTimeMs;                 // Jeda antar elemen (.) & (-)
+            const charPauseMs = charPauseDuration * 1000;     // Jeda antar huruf Sesuai Slider Pengaturan
+
+            for (let i = 0; i < currentSequence.length; i++) {
+                if (!isRunningSequence) break;
+
+                currentIndex = i;
+                updateProgress();
+
+                const char = currentSequence[i];
+                const code = morseCodeMap[char] || '';
+
+                for (let symbol of code) {
+                    if (!isRunningSequence) break;
+
+                    const duration = symbol === '.' ? dotTimeMs : dashTimeMs;
+
+                    document.getElementById('morse-symbol-display').innerText = code;
+
+                    // Nyalakan Lampu & Play Varian Audio Suara Terpilih
+                    setLampState(true);
+                    playBeep(duration, selectedSoundKey);
+
+                    await sleep(duration);
+
+                    setLampState(false);
+                    await sleep(elementPauseMs);
+                }
+
+                document.getElementById('morse-symbol-display').innerText = '';
+                await sleep(charPauseMs);
+            }
+
+            if (isRunningSequence) {
+                handleGameFinish();
+            }
+        }
+
+        function setLampState(active) {
+            const bulb = document.getElementById('lamp-bulb');
+            const icon = document.getElementById('lamp-icon');
+
+            if (active) {
+                bulb.className = "w-24 h-24 rounded-full bg-amber-400 border-amber-200 lamp-glow flex items-center justify-center transition-all duration-75";
+                icon.className = "w-12 h-12 text-slate-950 transition-all";
+            } else {
+                bulb.className = "w-24 h-24 rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center transition-all duration-75";
+                icon.className = "w-12 h-12 text-slate-700 transition-all";
+            }
+        }
+
+        function updateProgress() {
+            const currentNum = String(currentIndex + 1).padStart(2, '0');
+            const totalNum = String(currentSequence.length).padStart(2, '0');
+            
+            document.getElementById('current-char-idx').innerText = currentNum;
+            document.getElementById('total-char-cnt').innerText = totalNum;
+
+            const pct = ((currentIndex + 1) / currentSequence.length) * 100;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        function handleGameFinish() {
+            completedSSCount++;
+            document.getElementById('ss-counter').innerText = `SS: ${completedSSCount}`;
+
+            const overlay = document.getElementById('game-overlay');
+            const overlayText = document.getElementById('overlay-text');
+            overlay.classList.remove('hidden');
+            overlayText.innerText = "MENUNGGU JAWABAN...";
+
+            setTimeout(showResult, 2000);
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('result-screen').classList.add('flex');
+            document.getElementById('answer-text').innerText = currentSequence.join('');
+        }
+
+        function stopGame() {
+            isRunningSequence = false;
+            backToMenu();
+        }
+
+        function replayGame() {
+            if (currentMode === 'word') startWordMode();
+            else startRandomMode();
+        }
+
+        function backToMenu() {
+            isRunningSequence = false;
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Kamus Engine
+        function openDictionary() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('dictionary-screen').classList.remove('hidden');
+            document.getElementById('dictionary-screen').classList.add('flex');
+
+            const grid = document.getElementById('dictionary-grid');
+            grid.innerHTML = '';
+            const items = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            for (let char of items) {
+                const code = morseCodeMap[char] || '';
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-lg";
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center font-black text-sm">
+                            ${char}
+                        </div>
+                        <span class="font-mono font-bold text-slate-300 text-xs tracking-widest">${code}</span>
+                    </div>
+                    <button onclick="playDictMorse('${char}')" class="p-2 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition active:scale-95" title="Dengarkan Morse">
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                grid.appendChild(card);
+            }
+            lucide.createIcons();
+        }
+
+        // Play Audio dari Kamus
+        async function playDictMorse(char) {
+            const code = morseCodeMap[char] || '';
+            const dotMs = 100;
+            const dashMs = 300;
+
+            for (let symbol of code) {
+                const duration = symbol === '.' ? dotMs : dashMs;
+                playBeep(duration, selectedSoundKey);
+                await sleep(duration + 100);
+            }
+        }
+    </script>
+</body>
+</html>
